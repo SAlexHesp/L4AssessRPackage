@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>L4Assess-vignette</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">L4Assess-vignette</h1>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#introduction-to-l4assess" id="toc-introduction-to-l4assess">Introduction to L4Assess</a>
+<ul>
+<li><a href="#overview-of-state-space-biomass-dynamics-models" id="toc-overview-of-state-space-biomass-dynamics-models">Overview of
+state space biomass dynamics models</a></li>
+<li><a href="#alternative-biomass-dynamics-model-production-equations" id="toc-alternative-biomass-dynamics-model-production-equations">Alternative
+biomass dynamics model production equations</a></li>
+<li><a href="#effect-of-an-environmental-variable-on-production" id="toc-effect-of-an-environmental-variable-on-production">Effect of an
+environmental variable on production</a></li>
+<li><a href="#effect-of-depensatory-stock-dynamics-on-production" id="toc-effect-of-depensatory-stock-dynamics-on-production">Effect of
+depensatory stock dynamics on production</a></li>
+<li><a href="#effect-of-an-environmental-variable-on-catchability" id="toc-effect-of-an-environmental-variable-on-catchability">Effect of
+an environmental variable on catchability</a></li>
+<li><a href="#model-fitting" id="toc-model-fitting">Model
+fitting</a></li>
+</ul></li>
+<li><a href="#methods-for-estimating-msy-and-bmsy" id="toc-methods-for-estimating-msy-and-bmsy">Methods for estimating MSY
+and BMSY</a>
+<ul>
+<li><a href="#estimating-msy-and-bmsy-using-schaefer-and-fox-models-with-environment-linked-to-production" id="toc-estimating-msy-and-bmsy-using-schaefer-and-fox-models-with-environment-linked-to-production">Estimating
+MSY and BMSY using Schaefer and Fox models with environment linked to
+production</a></li>
+<li><a href="#estimating-msy-and-bmsy-using-schaefer-and-fox-models-with-depensation" id="toc-estimating-msy-and-bmsy-using-schaefer-and-fox-models-with-depensation">Estimating
+MSY and BMSY using Schaefer and Fox models with depensation</a></li>
+<li><a href="#estimating-msy-and-bmsy-using-schaefer-and-fox-models-with-environment-linked-to-production-and-depensation" id="toc-estimating-msy-and-bmsy-using-schaefer-and-fox-models-with-environment-linked-to-production-and-depensation">Estimating
+MSY and BMSY using Schaefer and Fox models with environment linked to
+production and depensation</a></li>
+<li><a href="#calculation-of-uncertainty-for-estimates-of-msy-and-bmsy" id="toc-calculation-of-uncertainty-for-estimates-of-msy-and-bmsy">Calculation
+of uncertainty for estimates of MSY and BMSY</a></li>
+</ul></li>
+</ul>
+</div>
+
+<div id="introduction-to-l4assess" class="section level2">
+<h2>Introduction to L4Assess</h2>
+<p>This R package is intended to provide a toolbox of stock assessment
+methods associated with use of state space biomass dynamics models for
+fish and invertebrate populations. This ‘class’ of stock assessment
+models is used widely by the researchers at the Department of Primary
+Industries and Regional Development (DPIRD) in Western Australia for
+conducting “level 2” or “level 4” assessments. These methods are
+typically applied to an annual time series for total catch removals
+together with one or more annual time series of fishery independent or
+fishery depended catch per unit effort (CPUE), considered to constitute
+a reliable index(ces) or population abundance. Multiple biomass dynamics
+models have been developed as part of this package, allowing for
+incorporation of environmental effects on population abundance and/or
+catchability, as well as allowing for the possibility of depensatory
+population dynamics. To our knowledge, no other packages have yet been
+developed focusing on incorporation of environmental effects on
+population dynamics.</p>
+<p>This R package essentially provides ‘wrapper’ code to run and produce
+diagnostic ouputs for the above ‘state space’ biomass dynamics models,
+which have been implemented in template model builder (TMB) (Kristensen
+et al., 2015). The models associated with this R package build on the
+initial models developed for the study by Marks et al. (2001), exploring
+environmental effects (primary productivity) on blue swimmer crabs
+(Portunus armatus) in Cockburn Sound Western Australia. This model has
+since been extended in various ways to account for environmental impacts
+on population dynamics and catchability, including rainfall on banana
+prawns in northern Australia (Marks et al., in prep.). The models have
+also been used for data limited assessments for sea cucumber stocks in
+northern Australia, with extensions to fit models with minimal catch per
+unit effort data, by specifying (rather than estimating) a probability
+distribution for intrinsic increase (r) and/or also fitting the model to
+one or more annual survey estimates of biomass (DPIRD, unpublished).
+Please note that the package is still in development and therefore,
+changes are expected. As this software is still in development, it is
+recommended that for ‘standard assessment’ reporting, i.e. when
+environmental variables are not being considered for modelling, it be
+used alongside other widely-available and accepted software packages for
+state space biomass dynamics modelling, such as ‘Just Another Bayesian
+Biomass Assessment’ (JABBA) (Winker et al., 2018), or ‘Surplus
+Production model in Continuous-Time’ (SPiCT) (Pederseen and Berg,
+2018).</p>
+<p>Please report any issues to Alex Hesp (<span class="math inline">\(\mathrm{Alex.Hesp@dpird.wa.gov.au}\)</span>).</p>
+<div id="overview-of-state-space-biomass-dynamics-models" class="section level3">
+<h3>Overview of state space biomass dynamics models</h3>
+<p>Surplus production models (i.e., biomass dynamics models) represent
+stock dynamics in terms of changing levels of annual biomass <span class="math inline">\((B_t)\)</span>, the intrinsic rate of growth <span class="math inline">\((r)\)</span>, the carrying capacity of a
+population <span class="math inline">\((K)\)</span>, and annual removals
+by fishers <span class="math inline">\((C_t)\)</span>. Biomass dynamics
+models, with a discrete difference equation and an annual timestep, were
+implemented using a state-space framework to account for both
+observation and process errors (e.g., Best and Punt, 2020; Punt, 2003;
+Zhou et al., 2009; Marks et al., 2021).</p>
+<p>The equation for the state-space biomass dynamics model is</p>
+<p><span class="math display">\[B_{(t+1)}= (B_t  +
+P_t-\hat{C}_t)e^{ξ_t}\]</span></p>
+<p>where <span class="math inline">\(B_{(t+1)}\)</span> is the estimated
+biomass at the start of year <span class="math inline">\(t+1\)</span>,
+<span class="math inline">\(B_t\)</span> is the biomass at the start of
+year <span class="math inline">\(t\)</span>, <span class="math inline">\(P_t\)</span> is the biomass production in year
+<span class="math inline">\(t\)</span>, <span class="math inline">\(C{_t}\)</span> is the predicted total catch in
+year <span class="math inline">\(t\)</span> and <span class="math inline">\(ξ_t\)</span> is the extent of process error in
+year <span class="math inline">\(t\)</span>. <span class="math inline">\(ξ_t ~ N(0;σ_R^2 )\)</span>, estimated as a random
+effect (Punt, 2003; Thorson et al., 2012; Marks et al., 2021). The
+predicted catch, <span class="math inline">\(C_t\)</span>, is estimated
+from the annual harvest rate (i.e., exploitation rate), <span class="math inline">\(H_t\)</span>, and biomass, <span class="math inline">\(B_t\)</span>, such that</p>
+<p><span class="math display">\[\hat{C}_t= H_tB_t\]</span></p>
+<p>where <span class="math inline">\(H_t=1⁄(1+e^{-F_t})\)</span>, and
+<span class="math inline">\(F_t\)</span> is a logistic-transformed
+parameter value for annual exploitation in year <span class="math inline">\(t\)</span>, estimated as a fixed parameter. While
+the unconstrained parameter estimate, <span class="math inline">\(F_t\)</span> lies in the range from <span class="math inline">\(-\infty\)</span> to <span class="math inline">\(+\infty\)</span>, the range for <span class="math inline">\(H_t\)</span> is <span class="math inline">\(0 &lt;
+H_t &lt; 1\)</span>.</p>
+</div>
+<div id="alternative-biomass-dynamics-model-production-equations" class="section level3">
+<h3>Alternative biomass dynamics model production equations</h3>
+<p>According to the Schaefer production equation, annual production
+<span class="math inline">\(P_t\)</span> is calculated as</p>
+<p><span class="math display">\[P_t=
+rB_t\bigg(1-\frac{B_t}{K}\bigg)\]</span></p>
+<p>Using the Fox production equation, <span class="math inline">\(P_t\)</span> is</p>
+<p><span class="math display">\[P_t=\log_e(K)rB_t\bigg(1-\frac{\log_eB_t}{\log_eK}\bigg)\]</span></p>
+<p>Applying the Pella-Tomlinson production equation, <span class="math inline">\(P_t\)</span> is</p>
+<p><span class="math display">\[P_t=\bigg(\frac{r}{p}\bigg)B_t\bigg(1-\bigg(\frac{B_t}{K}\bigg)^p\bigg)  \]</span></p>
+</div>
+<div id="effect-of-an-environmental-variable-on-production" class="section level3">
+<h3>Effect of an environmental variable on production</h3>
+<p>The influence of an environmental variable on population biomass,
+<span class="math inline">\(γ_{(1,t)}\)</span>, is described as a
+multiplicative effect (e.g., Mueter and Megrey, 2006; Marks et al.,
+2021) using</p>
+<p><span class="math display">\[γ_{(1,t)}=e^{(δ_1 X_t)}\]</span></p>
+<p>where <span class="math inline">\(X_t\)</span> is the standardised
+rainfall index (mean = 0 and standard deviation = 1) and <span class="math inline">\(δ_1\)</span> is a parameter employed to scale the
+influence of envrionment on biomass. The full biomass equation is</p>
+<p><span class="math display">\[B_{(t+1)}= (B_t  +
+P_t-\hat{C}_t)γ_{(1,t)}e^{(ξ_t)}\]</span></p>
+</div>
+<div id="effect-of-depensatory-stock-dynamics-on-production" class="section level3">
+<h3>Effect of depensatory stock dynamics on production</h3>
+<p>Effects of depensation on production in year <span class="math inline">\(t\)</span>, denoted <span class="math inline">\(D_t\)</span>, are modelled as</p>
+<p><span class="math display">\[D_t =
+1-\exp\bigg(\frac{\log_e(0.5)B_t}{dK}\bigg)\]</span> where <span class="math inline">\(d\)</span> is a model parameter describing the
+level of depensation, for which a value of approximately 0 indicates no
+depensatory effect and 1 indicates full depensation (Hilborn et al.,
+2014). For biomass dynamics models employing this depensatory function,
+the values of <span class="math inline">\(D_t\)</span> are multiplied by
+the annual estimates of surplus production (Hilborn et al., 2014),
+i.e.</p>
+<p><span class="math display">\[B_{t+1} = (B_t +
+P_tD_t-\hat{C_t})e^{ξ_t}\]</span></p>
+</div>
+<div id="effect-of-an-environmental-variable-on-catchability" class="section level3">
+<h3>Effect of an environmental variable on catchability</h3>
+<p>The influence of rainfall on catchability is considered such that the
+predicted <span class="math inline">\(CPUE\)</span>, <span class="math inline">\(\hat{I}_t\)</span>, for each abundance index is
+calculated as</p>
+<p><span class="math display">\[\hat{I_t}=qγ_{(2,t)}B_t\]</span></p>
+<p>where <span class="math inline">\(q\)</span> is the catchability
+coefficient, one for each CPUE timeseries, and <span class="math inline">\(γ_{(2,t)}\)</span> is the influence of environment
+on catchability in year <span class="math inline">\(t\)</span>,
+estimated as</p>
+<p><span class="math display">\[γ_{(2,t)}=e^{(δ_2X_t)}\]</span></p>
+</div>
+<div id="model-fitting" class="section level3">
+<h3>Model fitting</h3>
+<p>For models not considering environmental effects on catchability, the
+predicted annual CPUE in year <span class="math inline">\(t\)</span>,
+<span class="math inline">\(\hat{I}_t\)</span>, for each of the catch
+rate time series, is calculated as</p>
+<p><span class="math display">\[\hat{I_t}=qB_t\]</span></p>
+<p>where <span class="math inline">\(q\)</span> is the catchability
+coefficient for a given CPUE series, estimated as model parameters
+(i.e. <span class="math inline">\(q_1\)</span> or <span class="math inline">\(q_2\)</span> etc.), and <span class="math inline">\(B_t\)</span> is the annual biomass estimated at
+the start of the fishing season. The biomass dynamics models are fitted
+using Template Model Builder (TMB) (Kristensen et al., 2015) with the
+nlminb optimiser in R (R Core Team, 2019) by minimising the sum of the
+negative log-likelihoods associated with the two CPUE series (<span class="math inline">\(λ_m\)</span> and <span class="math inline">\(λ_d\)</span>) catch series, and process error
+random effects. The negative log-likelihood for each CPUE time series
+was calculated as</p>
+<p><span class="math display">\[λ=∑_t\bigg[0.5\log_e{\big(σ{M_t^2+σ_P^2\big)}}+0.5\log_e
+(2π)+\frac{\big(\log_e(I_t
+)-\log_e(\hat{I_t})\big)^2}{2\big(σ{M_t^2+σ_P^2\big)}}\bigg]\]</span></p>
+<p>where <span class="math inline">\(t\)</span> corresponds to the years
+of available CPUE data for each CPUE time series, <span class="math inline">\(I_t\)</span> is the (or one of several) observed,
+CPUE time series, <span class="math inline">\(I_t\)</span>. <span class="math inline">\(\hat{I_t}\)</span> denotes the estimated annual
+CPUE time series, as described above, and <span class="math inline">\(σ_{M_t}^{2}\)</span> is the variance associated
+with <span class="math inline">\(I_t\)</span>, and <span class="math inline">\(σ_P^2\)</span> is an additional, unmeasured
+variance associated with input data, specified as a percentage of the
+average observed variance associated with <span class="math inline">\(I_t\)</span> across all years (Marks et al.,
+2021).</p>
+<p>The negative log-likelihood, <span class="math inline">\(λ_c\)</span>, for annual catches is calculated
+as</p>
+<p><span class="math display">\[λ_c=∑_t\bigg[0.5\log_e
+(σ_c^2)+0.5\log_e(2π)+\frac{\big(\log_e(C_t )-\log_e(\hat{C_t}
+\big)^2}{2σ_c^2}\bigg]\]</span></p>
+<p>where <span class="math inline">\(σ_c^2\)</span> is the variance
+associated with the annual catch estimates.</p>
+<p>The negative log-likelihood for the random effects, <span class="math inline">\(λ_ξ\)</span>, is calculated as</p>
+<p><span class="math display">\[λ_ξ=∑_t\bigg[0.5\log_e(σ_R^2+τ^2σ_{t,env}^2)+0.5\log_e(2π)+\frac{ξ_t^2}{2(σ_R^2+τ^2σ_{t,env}^2)}\bigg]\]</span></p>
+<p>where <span class="math inline">\(σ_R\)</span> is the process error,
+<span class="math inline">\(τ\)</span> is a specified additional
+variance that modifies the extent to which rainfall is linked to
+population dynamics, and <span class="math inline">\(σ_{t,env}\)</span>
+are the standard errors associated with the observed annual
+environmental deviations relative to the mean environmental index
+value.</p>
+</div>
+</div>
+<div id="methods-for-estimating-msy-and-bmsy" class="section level2">
+<h2>Methods for estimating MSY and BMSY</h2>
+<p>The package contains functions for producing estimates of maximum
+sustainable yield <span class="math inline">\((MSY)\)</span> and the
+associated stock biomass <span class="math inline">\((B_{MSY})\)</span>
+and, where applicable, after accounting for the influence of the
+environmental parameter <span class="math inline">\(δ\)</span>, and/or
+depensation parameter <span class="math inline">\(d\)</span> (see also
+supplementary material for Marks et al. (2021). Documentation is
+provided below for estimates from the Schaefer and Fox models.</p>
+<p>Broadly, the value of <span class="math inline">\(MSY\)</span> for a
+biomass dynamics model with a given form of production function may be
+determined by calculating the biomass at which maximum production occurs
+and then substituting that value into the relevant production function.
+Analytic solutions exist for calculated <span class="math inline">\(B_MSY\)</span> and <span class="math inline">\(MSY\)</span> when using the traditional Schaefer,
+Fox and Pella-Tomlinnson production functions. For the Schaefer
+function, <span class="math inline">\((B_{MSY})\)</span> is calculated
+as <span class="math inline">\(BMSY=K/2\)</span> and <span class="math inline">\(MSY\)</span> as <span class="math inline">\(MSY=rK/4\)</span>. For the Fox model, the analytic
+solution for <span class="math inline">\(MSY\)</span> is <span class="math inline">\(MSY=rK/e\)</span> and <span class="math inline">\(B_{MSY}=K/e\)</span>.</p>
+<div id="estimating-msy-and-bmsy-using-schaefer-and-fox-models-with-environment-linked-to-production" class="section level3">
+<h3>Estimating MSY and BMSY using Schaefer and Fox models with
+environment linked to production</h3>
+<p>For the Schaefer model with the addition of environment (without
+depensation), the closed-form solution for <span class="math inline">\(MSY\)</span> for a stock in an environment with a
+specified constant level for the environmental index is <span class="math display">\[MSY=rK\exp(\delta{X_t})/4\]</span> where <span class="math inline">\(X_t\)</span> is the environmental deviations
+relative to the observed mean, and <span class="math inline">\(\delta\)</span> is a parameter used to describe
+the influence of the environment (Mueter and Megrey, 2006). For the Fox
+model with the addition of environment (without depensation)</p>
+<p><span class="math display">\[MSY=rK\exp(\delta{X_{t−1}})\]</span>.</p>
+</div>
+<div id="estimating-msy-and-bmsy-using-schaefer-and-fox-models-with-depensation" class="section level3">
+<h3>Estimating MSY and BMSY using Schaefer and Fox models with
+depensation</h3>
+<p>Where a closed-form solution for the biomass associated with maximum
+production cannot be defined, a numerical approach applying a
+root-finding algorithm (i.e. R uniroot function) can be used in
+combination with the derivative of the production function to find the
+level of catch where <span class="math inline">\(P&#39;(B)=0\)</span>.
+For calculing <span class="math inline">\(B_{MSY}\)</span> and <span class="math inline">\(MSY\)</span> for models involving depensation (for
+which closed-form solutions do not exist), the uniroot function in R is
+used to obtain the root of the analytic derivative of the production
+function relative to the biomass, over the interval 0.1K to K.</p>
+<p>For the Schaefer model with the addition of depensation, the
+derivative of the production function relative to the biomass is defined
+as</p>
+<p><span class="math display">\[P&#39;(B)=r\bigg(1−\frac{2B}{K}\bigg)+\exp\bigg(\frac{\log_e(0.5)B}{dK}\bigg)\bigg(\frac{\log_e(0.5)rB(B-K)}{dK^2}−r\bigg(1−\frac{2B}{K}\bigg)\bigg)\]</span></p>
+<p>where <span class="math inline">\(d\)</span> is the depensatory
+parameter. For the Fox model including depensation, the derivative of
+the production function relative to the biomass is defined as</p>
+<p><span class="math display">\[P&#39;(B)=r\bigg(1−\log_e\frac{K}{B}-1\bigg)\bigg(1-\exp\bigg(\frac{B\log_e(0.5)}{dK}\bigg)\bigg)-\frac{rB\log_e(K)\log_e(0.5)}{dK}\exp\bigg(\frac{B\log_e(0.5)}{dK}\bigg)\bigg(1-\frac{\log_e(B)}{\log_e(K)}\bigg)\]</span></p>
+</div>
+<div id="estimating-msy-and-bmsy-using-schaefer-and-fox-models-with-environment-linked-to-production-and-depensation" class="section level3">
+<h3>Estimating MSY and BMSY using Schaefer and Fox models with
+environment linked to production and depensation</h3>
+<p>To include depensation and environment in the Schaefer model, the
+derivative of the production function relative to the biomass is defined
+as</p>
+<p><span class="math display">\[P&#39;(B)=r\bigg(1−\frac{2B}{K}\bigg)+\exp\bigg(\frac{\log_e(0.5)B}{dK}\bigg)\bigg(\frac{\log_e(0.5)rB(B-K)}{dK^2}−r\bigg(1−\frac{2B}{K}\bigg)\bigg)\exp(\delta{X_t})\]</span></p>
+<p>For the Fox model including depensation and environment, the
+derivative of the production function relative to the biomass is defined
+as</p>
+<p><span class="math display">\[P&#39;(B)=r\bigg(1−\log_e\frac{K}{B}-1\bigg)\bigg(1-\exp\bigg(\frac{B\log_e(0.5)}{dK}\bigg)\bigg)-\frac{rB\log_e(K)\log_e(0.5)}{dK}\exp\bigg(\frac{B\log_e(0.5)}{dK}\bigg)\bigg(1-\frac{\log_e(B)}{\log_e(K)}\bigg)\exp(\delta{X_t})\]</span></p>
+</div>
+<div id="calculation-of-uncertainty-for-estimates-of-msy-and-bmsy" class="section level3">
+<h3>Calculation of uncertainty for estimates of MSY and BMSY</h3>
+<p>To estimate uncertainty, a multivariate normal sampling distribution
+was is from the parameter estimates and their associated
+variance-covariance matrix, calculated in R from the Hessian matrix
+produced by TMB in the model-fitting process. For each biomass dynamics
+model, a specified number of estimates of <span class="math inline">\(MSY\)</span> and <span class="math inline">\(B_{MSY}\)</span> can be generated using the model
+parameter values generated from resampling the multivariate normal
+distribution. The 95 % confidence limits for <span class="math inline">\(MSY\)</span> and <span class="math inline">\(B_{MSY}\)</span> are taken as the 2.5th and 97.5th
+percentiles of the generated values.</p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

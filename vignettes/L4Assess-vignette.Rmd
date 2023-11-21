@@ -1,0 +1,159 @@
+---
+title: "L4Assess-vignette"
+output: 
+  rmarkdown::html_vignette:
+  #rmarkdown::word_document:
+    toc: true
+    toc_depth: 3
+vignette: >
+  %\VignetteIndexEntry{L4Assess-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+```{r library_setup}
+library(L4Assess)
+```
+
+
+## Introduction to L4Assess
+
+This R package is intended to provide a toolbox of stock assessment methods associated with use of state space biomass dynamics models for fish and invertebrate populations. This 'class' of stock assessment models is used widely by the researchers at the Department of Primary Industries and Regional Development (DPIRD) in Western Australia for conducting "level 2" or "level 4" assessments. These methods are typically applied to an annual time series for total catch removals together with one or more annual time series of fishery independent or fishery depended catch per unit effort (CPUE), considered to constitute a reliable index(ces) or population abundance. Multiple biomass dynamics models have been developed as part of this package, allowing for incorporation of environmental effects on population abundance and/or catchability, as well as allowing for the possibility of depensatory population dynamics. To our knowledge, no other packages have yet been developed focusing on incorporation of environmental effects on population dynamics.  
+
+This R package essentially provides 'wrapper' code to run and produce diagnostic ouputs for the above 'state space' biomass dynamics models, which have been implemented in template model builder (TMB) (Kristensen et al., 2015). The models associated with this R package build on the initial models developed for the study by Marks et al. (2001), exploring environmental effects (primary productivity) on blue swimmer crabs (Portunus armatus) in Cockburn Sound Western Australia. This model has since been extended in various ways to account for environmental impacts on population dynamics and catchability, including rainfall on banana prawns in northern Australia (Marks et al., in prep.). The models have also been used for data limited assessments for sea cucumber stocks in northern Australia, with extensions to fit models with minimal catch per unit effort data, by specifying (rather than estimating) a probability distribution for intrinsic increase (r) and/or also fitting the model to one or more annual survey estimates of biomass (DPIRD, unpublished). Please note that the package is still in development and therefore, changes are expected. As this software is still in development, it is recommended that for 'standard assessment' reporting, i.e. when environmental variables are not being considered for modelling, it be used alongside other widely-available and accepted software packages for state space biomass dynamics modelling, such as ‘Just Another Bayesian Biomass Assessment’ (JABBA) (Winker et al., 2018), or ‘Surplus Production model in Continuous-Time’ (SPiCT) (Pederseen and Berg, 2018). 
+
+Please report any issues to Alex Hesp ($\mathrm{Alex.Hesp@dpird.wa.gov.au}$).
+
+
+### Overview of state space biomass dynamics models
+
+Surplus production models (i.e., biomass dynamics models) represent stock dynamics in terms of changing levels of annual biomass $(B_t)$, the intrinsic rate of growth $(r)$, the carrying capacity of a population $(K)$, and annual removals by fishers $(C_t)$. Biomass dynamics models, with a discrete difference equation and an annual timestep, were implemented using a state-space framework to account for both observation and process errors (e.g., Best and Punt, 2020; Punt, 2003; Zhou et al., 2009; Marks et al., 2021). 
+
+
+The equation for the state-space biomass dynamics model is
+
+$$B_{(t+1)}= (B_t  + P_t-\hat{C}_t)e^{ξ_t}$$
+
+where $B_{(t+1)}$ is the estimated biomass at the start of year $t+1$, $B_t$ is the biomass at the start of year $t$, $P_t$ is the biomass production in year $t$, $C{_t}$ is the predicted total catch in year $t$  and $ξ_t$ is the extent of process error in year $t$. $ξ_t  ~ N(0;σ_R^2 )$, estimated as a random effect (Punt, 2003; Thorson et al., 2012; Marks et al., 2021). The predicted catch, $C_t$, is estimated from the annual harvest rate (i.e., exploitation rate), $H_t$, and biomass, $B_t$, such that 
+
+$$\hat{C}_t= H_tB_t$$
+
+where $H_t=1⁄(1+e^{-F_t})$, and $F_t$ is a logistic-transformed parameter value for annual exploitation in year $t$, estimated as a fixed parameter. While the unconstrained parameter estimate, $F_t$ lies in the range from $-\infty$ to $+\infty$, the range for $H_t$ is $0 < H_t < 1$. 
+
+### Alternative biomass dynamics model production equations
+
+According to the Schaefer production equation, annual production $P_t$ is calculated as 
+
+$$P_t= rB_t\bigg(1-\frac{B_t}{K}\bigg)$$
+
+Using the Fox production equation, $P_t$ is 
+
+$$P_t=\log_e(K)rB_t\bigg(1-\frac{\log_eB_t}{\log_eK}\bigg)$$
+
+Applying the Pella-Tomlinson production equation, $P_t$ is 
+
+$$P_t=\bigg(\frac{r}{p}\bigg)B_t\bigg(1-\bigg(\frac{B_t}{K}\bigg)^p\bigg)  $$
+
+### Effect of an environmental variable on production
+
+The influence of an environmental variable on population biomass, $γ_{(1,t)}$, is described as a multiplicative effect (e.g., Mueter and Megrey, 2006; Marks et al., 2021) using
+
+$$γ_{(1,t)}=e^{(δ_1 X_t)}$$ 
+
+where $X_t$ is the standardised rainfall index (mean = 0 and standard deviation = 1) and $δ_1$ is a parameter employed to scale the influence of  envrionment on biomass. The full biomass equation is
+
+$$B_{(t+1)}= (B_t  + P_t-\hat{C}_t)γ_{(1,t)}e^{(ξ_t)}$$
+
+### Effect of depensatory stock dynamics on production
+
+Effects of depensation on production in year $t$, denoted $D_t$, are modelled as
+
+$$D_t = 1-\exp\bigg(\frac{\log_e(0.5)B_t}{dK}\bigg)$$
+where $d$ is a model parameter describing the level of depensation, for which a value of approximately 0 indicates no depensatory effect and 1 indicates full depensation (Hilborn et al., 2014). For biomass dynamics models employing this depensatory function, the values of $D_t$ are multiplied by the annual estimates of surplus production (Hilborn et al.,
+2014), i.e.
+
+$$B_{t+1} = (B_t + P_tD_t-\hat{C_t})e^{ξ_t}$$
+
+### Effect of an environmental variable on catchability
+
+
+The  influence of rainfall on catchability is considered such that the predicted $CPUE$, $\hat{I}_t$, for each abundance index is calculated as
+
+$$\hat{I_t}=qγ_{(2,t)}B_t$$
+
+where $q$ is the catchability coefficient, one for each CPUE timeseries, and $γ_{(2,t)}$ is the influence of environment on catchability in year $t$, estimated as
+
+$$γ_{(2,t)}=e^{(δ_2X_t)}$$
+
+### Model fitting
+
+For models not considering environmental effects on catchability, the predicted annual CPUE in year $t$, $\hat{I}_t$, for each of the catch rate time series, is calculated as 
+
+$$\hat{I_t}=qB_t$$
+
+where $q$ is the catchability coefficient for a given CPUE series, estimated as model parameters (i.e. $q_1$ or $q_2$ etc.), and $B_t$ is the annual biomass estimated at the start of the fishing season. The biomass dynamics models are fitted using Template Model Builder (TMB) (Kristensen et al., 2015) with the nlminb optimiser in R (R Core Team, 2019) by minimising the sum of the negative log-likelihoods associated with the two  CPUE series ($λ_m$ and $λ_d$) catch series, and process error random effects. The negative log-likelihood for each CPUE time series was calculated as
+
+$$λ=∑_t\bigg[0.5\log_e{\big(σ{M_t^2+σ_P^2\big)}}+0.5\log_e (2π)+\frac{\big(\log_e(I_t )-\log_e(\hat{I_t})\big)^2}{2\big(σ{M_t^2+σ_P^2\big)}}\bigg]$$
+
+where $t$ corresponds to the years of available CPUE data for each CPUE time series, $I_t$ is the (or one of several) observed, CPUE time series, $I_t$. $\hat{I_t}$ denotes the estimated annual CPUE time series, as described above, and $σ_{M_t}^{2}$ is the variance associated with $I_t$, and $σ_P^2$ is an additional, unmeasured variance associated with input data, specified as a percentage of the average observed variance associated with $I_t$ across all years (Marks et al., 2021).
+
+The negative log-likelihood, $λ_c$, for annual catches is calculated as
+
+$$λ_c=∑_t\bigg[0.5\log_e (σ_c^2)+0.5\log_e(2π)+\frac{\big(\log_e(C_t )-\log_e(\hat{C_t} \big)^2}{2σ_c^2}\bigg]$$
+
+where $σ_c^2$ is the variance associated with the annual catch estimates. 
+
+The negative log-likelihood for the random effects, $λ_ξ$, is calculated as 
+
+$$λ_ξ=∑_t\bigg[0.5\log_e(σ_R^2+τ^2σ_{t,env}^2)+0.5\log_e(2π)+\frac{ξ_t^2}{2(σ_R^2+τ^2σ_{t,env}^2)}\bigg]$$
+
+where $σ_R$ is the process error, $τ$ is a specified additional variance that modifies the extent to which rainfall is linked to population dynamics, and $σ_{t,env}$ are the standard errors associated with the observed annual environmental deviations relative to the mean environmental index value.
+
+
+## Methods for estimating MSY and BMSY
+
+The package contains functions for producing estimates of maximum sustainable yield $(MSY)$ and the associated stock biomass $(B_{MSY})$ and, where applicable, after accounting for the influence of the environmental parameter $δ$, and/or depensation parameter $d$ (see also supplementary material for Marks et al. (2021). Documentation is provided below for estimates from the Schaefer and Fox models. 
+
+Broadly, the value of $MSY$ for a biomass dynamics model with a given form of production function may be determined by calculating the biomass at which maximum production occurs and then substituting that value into the relevant production function. Analytic solutions exist for calculated $B_MSY$ and $MSY$ when using the traditional Schaefer, Fox and Pella-Tomlinnson production functions.  For the Schaefer function, $(B_{MSY})$ is calculated as $BMSY=K/2$ and $MSY$ as $MSY=rK/4$. For the Fox model, the analytic solution for $MSY$ is $MSY=rK/e$ and $B_{MSY}=K/e$.            
+
+
+### Estimating MSY and BMSY using Schaefer and Fox models with environment linked to production
+
+For the Schaefer model with the addition of environment (without depensation), the closed-form solution for $MSY$ for a stock in an environment with a specified constant level for the environmental index is 
+$$MSY=rK\exp(\delta{X_t})/4$$
+where $X_t$ is the environmental deviations relative to the observed mean, and $\delta$ is a parameter used to describe the influence of the environment (Mueter and Megrey, 2006). For the Fox model with the addition of environment (without depensation)
+
+$$MSY=rK\exp(\delta{X_{t−1}})$$.
+
+
+### Estimating MSY and BMSY using Schaefer and Fox models with depensation
+
+Where a closed-form solution for the biomass associated with maximum production cannot be defined, a numerical approach applying a root-finding algorithm (i.e. R uniroot function) can be used in combination with the derivative of the production function to find the level of catch where $P'(B)=0$. For calculing $B_{MSY}$ and $MSY$ for models involving depensation (for which closed-form solutions do not exist), the uniroot function in R is used to obtain the root of the analytic derivative of the production function relative to the biomass, over the interval 0.1K to K. 
+
+For the Schaefer model with the addition of depensation, the derivative of the production function relative to the biomass is defined as 
+
+$$P'(B)=r\bigg(1−\frac{2B}{K}\bigg)+\exp\bigg(\frac{\log_e(0.5)B}{dK}\bigg)\bigg(\frac{\log_e(0.5)rB(B-K)}{dK^2}−r\bigg(1−\frac{2B}{K}\bigg)\bigg)$$
+
+where $d$ is the depensatory parameter. For the Fox model including depensation, the derivative of the production function relative to the biomass is defined as
+
+$$P'(B)=r\bigg(1−\log_e\frac{K}{B}-1\bigg)\bigg(1-\exp\bigg(\frac{B\log_e(0.5)}{dK}\bigg)\bigg)-\frac{rB\log_e(K)\log_e(0.5)}{dK}\exp\bigg(\frac{B\log_e(0.5)}{dK}\bigg)\bigg(1-\frac{\log_e(B)}{\log_e(K)}\bigg)$$
+
+### Estimating MSY and BMSY using Schaefer and Fox models with environment linked to production and depensation
+
+To include depensation and environment in the Schaefer model, the derivative of the production function relative to the biomass is defined as 
+
+$$P'(B)=r\bigg(1−\frac{2B}{K}\bigg)+\exp\bigg(\frac{\log_e(0.5)B}{dK}\bigg)\bigg(\frac{\log_e(0.5)rB(B-K)}{dK^2}−r\bigg(1−\frac{2B}{K}\bigg)\bigg)\exp(\delta{X_t})$$
+
+For the Fox model including depensation and environment, the derivative of the production function relative to the biomass is defined as 
+
+$$P'(B)=r\bigg(1−\log_e\frac{K}{B}-1\bigg)\bigg(1-\exp\bigg(\frac{B\log_e(0.5)}{dK}\bigg)\bigg)-\frac{rB\log_e(K)\log_e(0.5)}{dK}\exp\bigg(\frac{B\log_e(0.5)}{dK}\bigg)\bigg(1-\frac{\log_e(B)}{\log_e(K)}\bigg)\exp(\delta{X_t})$$
+
+### Calculation of uncertainty for estimates of MSY and BMSY 
+
+To estimate uncertainty, a multivariate normal sampling distribution was is from the parameter estimates and their associated variance-covariance matrix, calculated in R from the Hessian matrix produced by TMB in the model-fitting process. For each biomass dynamics model, a specified number of estimates of $MSY$ and $B_{MSY}$ can be generated using the model parameter values generated from resampling the multivariate normal distribution. The 95 % confidence limits for $MSY$ and $B_{MSY}$ are taken as the 2.5th and 97.5th percentiles of the generated values.
+
