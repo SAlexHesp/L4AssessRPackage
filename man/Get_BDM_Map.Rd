@@ -4,7 +4,7 @@
 \alias{Get_BDM_Map}
 \title{Get model template model builder (TMB) parameter map}
 \usage{
-Get_BDM_Map(DatFromCSVFile, mod_scenario, mod_option)
+Get_BDM_Map(DatFromCSVFile, mod_scenario, mod_option, fix_pInit)
 }
 \arguments{
 \item{DatFromCSVFile}{Data object read in from a csv file, containing all model time series data}
@@ -12,6 +12,8 @@ Get_BDM_Map(DatFromCSVFile, mod_scenario, mod_option)
 \item{mod_scenario}{1=non-state space, 2=state space}
 
 \item{mod_option}{1=traditional, 2= +chl, 3= +dep, 3 = +chl and dep}
+
+\item{fix_pInit}{map option to fix pInit parameter 1=yes, 0=no}
 }
 \value{
 List of model parameters that should not be estimated using TMB
@@ -24,5 +26,5 @@ that for the second scenario, EpsR are 'estimated' as random effects.
 mod_scenario = 2 # 1=non-state space, 2=state space
 model_option = 1 # 1=traditional, 2= +chl, 3= +dep, 3 = +chl and dep
 nyrs = 44
-Get_BDM_Map(DatFromCSVFile, mod_option, mod_scenario)
+Get_BDM_Map(DatFromCSVFile, mod_option, mod_scenario, fix_pInit)
 }

@@ -159,6 +159,7 @@ template<class Type> Type objective_function<Type>::operator() () {
   // ============================================
   
   // Parameters for the Schaefer or Fox versions of the Biomass Dynamics Models, both of which are > 0
+  PARAMETER(pInit);  // Proportion unfished, for initial population
   PARAMETER(ln_K);
   PARAMETER(ln_r);
   PARAMETER(ln_pt_parm);   // Pella-Tomlinson shape parameter
@@ -180,7 +181,7 @@ template<class Type> Type objective_function<Type>::operator() () {
   PARAMETER(lndep); // Parameter determining the effect of depensation 
   PARAMETER_VECTOR(FF);      // Estimated exploitation parameters.
   PARAMETER_VECTOR(EpsR);   // // Parameters for state-space random effect - process error (size == nyrs)
-
+  
   // Declaration and initializaion of penalty terms
   Type param_pen = Type(0.0);
   Type K_pen = Type(0.0);
@@ -202,7 +203,9 @@ template<class Type> Type objective_function<Type>::operator() () {
   Type pt_pen = Type(0.0);
   Type depl_pen = Type(0.0);
   Type harv_pen = Type(0.0);
-  Type biom_pen = Type(0.0); 
+  Type biom_pen = Type(0.0);
+  Type pInit_pen = Type(0.0);  
+  
   
   // Calculate penalties if the parameters lie outside specified feasible ranges, and reset
   // to feasible ranges for population being modeled
@@ -308,8 +311,15 @@ template<class Type> Type objective_function<Type>::operator() () {
   Type pt_parm = exp(temp_parm);
   param_pen += pt_pen;
   
-  // declare sd values, i.e.(unmeasured) process error associated with input data 
-  Type pInit = 1.0; // for initial biomass
+  pInit_pen = penfun(pInit - lowbound(13), eps, pInit_pen);
+  temp_parm = lowbound(13) + posfun(pInit - lowbound(13), eps, pInit_pen);
+  pInit_pen += penfun(uppbound(13) - temp_parm, eps, pInit_pen);
+  temp_parm = uppbound(13) - posfun(uppbound(13) - temp_parm, eps, pInit_pen);
+  Type pInit_parm = temp_parm;
+  param_pen += pInit_pen;
+  
+  std::cout << "pInit " << pInit << " lbnd " << lowbound(13) << " ubnd " << uppbound(13) <<
+   " pInit_parm " << pInit_parm << std::endl;
   
   // Declare variables in which to store outputs
   vector<Type> biom(nyrs+1); // biomass
@@ -395,8 +405,8 @@ template<class Type> Type objective_function<Type>::operator() () {
   
   // Set the biomass at the start of the first year, i.e.
   // year 0, to the carrying capacity
-  biom(0) = K * pInit;
-  relbiom(0) = pInit;
+  biom(0) = K * pInit_parm;
+  relbiom(0) = pInit_parm;
   
   // Loop over the remaining years, updating the biomass for each year using the
   // biomass dynamics model and the effect of process error (if any)

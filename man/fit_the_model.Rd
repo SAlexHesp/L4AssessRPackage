@@ -11,6 +11,7 @@ fit_the_model(
   mod_option,
   bdm_data,
   bdm_params,
+  fix_pInit,
   bdm_map = NULL,
   initial_params = NULL,
   nyrs
@@ -28,6 +29,8 @@ fit_the_model(
 \item{bdm_data}{object containing input data for TMB model}
 
 \item{bdm_params}{object containing parameters for TMB model}
+
+\item{fix_pInit}{map option to fix pInit parameter 1=yes, 0=no}
 
 \item{bdm_map}{object containing parameter map for TMB model}
 

@@ -5,6 +5,7 @@
 \title{Set initial values for estimated model parameters}
 \usage{
 Set_InitValsForBDM_Params(
+  pInit,
   ln_K,
   ln_r,
   ln_q1,
@@ -23,6 +24,8 @@ Set_InitValsForBDM_Params(
 )
 }
 \arguments{
+\item{pInit}{initial level of relative biomass for population}
+
 \item{ln_K}{natural log of initial value for population carrying capacity.}
 
 \item{ln_r}{natural log of initial value for population intrinsic increase.}
@@ -63,7 +66,7 @@ without any link to an environmental index, the value should be set to zero. Set
 initial values for all parameters, whether estimated or not.
 }
 \examples{
-nyrs = 44
+pInit = 1.0
 ln_K = log(8000)
 ln_r = log(0.5)
 ln_q1 = -10
@@ -79,6 +82,6 @@ lndep = -1
 FF = rep(-2, nyrs)
 EpsR = rep(0, times=nyrs)
 ln_SigmaR = log(0.3)
-bdm_params = Set_InitValsForBDM_Params(ln_K, ln_r, ln_q1, ln_q2, ln_q3, ln_q4, ln_sd1, ln_sd2,
+bdm_params = Set_InitValsForBDM_Params(pInit, ln_K, ln_r, ln_q1, ln_q2, ln_q3, ln_q4, ln_sd1, ln_sd2,
                                        ln_sd3,ln_sd4, env_p, lndep, ln_pt_parm, FF, EpsR)
 }

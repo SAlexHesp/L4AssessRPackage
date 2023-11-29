@@ -11,7 +11,8 @@ Set_BoundsForBDM_Params(
   ln_sd_bnds,
   env_param_bnds,
   ln_dep_bnds,
-  ln_pt_bnds
+  ln_pt_bnds,
+  pInit_bnds
 )
 }
 \arguments{
@@ -20,6 +21,8 @@ Set_BoundsForBDM_Params(
 \item{ln_r_bnds}{natural log of initial value for population intrinsic increase.}
 
 \item{env_param_bnds}{natural log of initial value for catchability param for 3rd CPUE series. Set to NA if 2 CPUE series.}
+
+\item{pInit_bnds}{initial level of relative biomass for population.}
 
 \item{ln_q_params_bnds}{natural log of initial value for catchability param for 1st CPUE series.}
 
@@ -42,6 +45,7 @@ ln_sd_bnds <- c(-20,1)
 env_param_bnds <- c(-20,20)
 ln_dep_bnds <- c(-20,0)
 ln_pt_bnds <- c(-20,0)
+pInit_bnds = c(0,1)
 bdm_param_bounds = Set_BoundsForBDM_Params(ln_K_bnds, ln_r_bnds, ln_q_bnds, ln_sd_bnds,
-                                         env_param_bnds, ln_dep_bnds, ln_pt_bnds)
+                                         env_param_bnds, ln_dep_bnds, ln_pt_bnds, pInit_bnds)
 }

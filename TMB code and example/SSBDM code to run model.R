@@ -2,6 +2,7 @@
 # L4Assess: State space biomass dynamics model incorporating environmental effects.
 # Stock Assessment team, DPIRD (2023)
 # Rachel Marks, Alex Hesp, Norm Hall & Ainslie Denham
+# Lasted updated 29/11/2023 (allow estimation of pInit - initial relative biomass)
 
 # Note the this model is broadly based on the model described by Marks et al. (2021), but
 # is NOT exactly the same, with several modifications. This model is still
@@ -44,6 +45,7 @@ SigmaR = 0.2 # assumed level of process error
 Sigma_env = 0.1 # assumed strength of environmental link with biomass (low value = strong relationship) 
 max_currBrel = 1.0 # upper limit to relative biomass in final year, i.e. final depletion penalty. Turn off by setting to high value.
 # specify lower and upper bounds for parameters
+pInit_bnds = c(0,1)
 ln_K_bnds = c(6,9)
 ln_r_bnds = log(c(0.01,1.5))
 ln_q_bnds = c(-20,0)
@@ -52,13 +54,16 @@ env_param_bnds = c(-20,20)
 ln_dep_bnds = c(-20,0)
 ln_pt_bnds = c(-20,0)
 bdm_param_bounds = Set_BoundsForBDM_Params(ln_K_bnds, ln_r_bnds, ln_q_bnds, ln_sd_bnds,
-                                           env_param_bnds, ln_dep_bnds, ln_pt_bnds)
+                                           env_param_bnds, ln_dep_bnds, ln_pt_bnds, pInit_bnds)
+length(bdm_param_bounds$low_bound_list[14])
+length(bdm_param_bounds$upp_bound_list[14])
 
 # get data inputs for TMB model
 bdm_data = Get_BDM_Data(DatFromCSVFile, wt_param_pen, wt_depl_pen, wt_biom_pen, wt_harv_pen, 
                         wt_cpue1, wt_cpue2, wt_cpue3, wt_cpue4, SigmaR, Sigma_env, max_currBrel)
 
 # specify initial parameters for TMB model
+pInit = 0.5
 ln_K = log(2000)
 ln_r = log(0.5) 
 ln_q1 = -10  
@@ -77,45 +82,31 @@ FF = rep(-2, nyrs)
 EpsR = rep(0, times=nyrs)
 
 # get estimated parameter list
-bdm_params = Set_InitValsForBDM_Params(ln_K, ln_r, ln_q1, ln_q2, ln_q3, ln_q4, ln_sd1, ln_sd2, 
+bdm_params = Set_InitValsForBDM_Params(pInit, ln_K, ln_r, ln_q1, ln_q2, ln_q3, ln_q4, ln_sd1, ln_sd2, 
                                        ln_sd3, ln_sd4, env_p, lndep, ln_pt_parm, FF, EpsR)
 bdm_params
 
 
 # set parameter map for TMB model (i.e. list of which model parameters not to estimate)
-bdm_map = Get_BDM_Map(DatFromCSVFile, mod_scenario, mod_option)
-bdm_map 
+# setting fix_pInit=1 results in initial relative biomass being fixed at user-specified input value,
+# setting to 1, it is estimated.
+bdm_map = Get_BDM_Map(DatFromCSVFile, mod_scenario, mod_option, fix_pInit=0)
 
 # fit the model
-result = fit_the_model(DatFromCSVFile, mod_scenario, mod_type, mod_option, bdm_data, bdm_params, bdm_map = NULL, initial_params = NULL)
-
+result = fit_the_model(DatFromCSVFile, mod_scenario, mod_type, mod_option, bdm_data, bdm_params, fix_pInit=0, bdm_map = NULL, initial_params = NULL)
+result$fit_TMB$par
 # get results
 fit_TMB = result$fit_TMB
 fit_TMB$par
 fit_TMB$objective
 fit_TMB$convergence
 
-# mod_option = 1 (traditional Schaefer model)
-# > fit_TMB$objective
-# [1] 118.7775
-
-# mod_option = 2 (Schaefer model with environmental effect)
-# > fit_TMB$objective
-# [1] 15.90365
-
-# mod_option = 3 (Schaefer model with depensation)
-# > fit_TMB$objective
-# [1] 116.4831
-
-# mod_option = 4 (Schaefer model with environmental effect + depensation)
-# > fit_TMB$objective
-# [1] 12.79828
-
 # Collect results using the report function in TMB
 result_TMB = result$rep_TMB
 result_TMB$r
 result_TMB$K
 result_TMB$env_param
+result_TMB$pInit
 
 # Collect the BDM_model used when fitting using wrapper function
 obj_TMB = result$obj_TMB
@@ -140,7 +131,10 @@ Plot_Obs_vs_Exp_Env_Index(DatFromCSVFile, model_outputs, xaxis_lab=NA, y_max=NA,
 Plot_Kobe_Plot(DatFromCSVFile, model_outputs)
 
 # plot random effects (linked to environment index)
-Plot_Estimated_Random_Effects(DatFromCSVFile, model_outputs)
+if (mod_scenario == 2) {
+  Plot_Estimated_Random_Effects(DatFromCSVFile, model_outputs)  
+}
+
 
 # get deterministic estimates for MSY and Bmsy (not assuming regime shift)
 env = 0 # 'average' env cond. # env = -0.5 # below average env cond.
@@ -155,58 +149,47 @@ MSYRes$Bmsy
 
 # mod_option = 2 (Schaefer with environmental effect)
 # results for model 2
-# > result_TMB$r
-# [1] 0.2227574
-# > result_TMB$K
-# [1] 1383.96
-# > result_TMB$env_param
-# [1] 1.917008
-# > MSYRes$MSY
-# [1] 29.55443
+result_TMB$r
+result_TMB$K
 
-# *********************************
-# For Simon - regime shift question
-# *********************************
 
-# Assuming regime shift, with new environmental norm at env = -0.5
-Orig_K = 1383.96
-r = 0.2227574
-env_param = 1.917008
+# ********************************************
+# For Simon - dynamic reference point question
+# ********************************************
+
+# Current environment at env = -0.5
+Orig_K = result_TMB$K
+r = result_TMB$r
+env_param = result_TMB$env_param
 env = -0.5
-MSY = 29.55443
+MSY = MSYRes$MSY
 
 # calculate new carrying capacity
 New_K = Orig_K * exp(env_param * env)
-# > New_K
-# [1] 530.7018
+New_K
 
 # or...
 # New_K check
 # MSY = rK/4, thus K=4MSY/r
 New_K_check = 4*MSY/r
-# > New_K_check
-# [1] 530.7017
+New_K_check
 
 # calculate new BMSY (i.e. after assumed regime shift)
 New_BMSY = New_K / 2
-# > New_BMSY
-# [1] 265.3509
+New_BMSY
 
 # so if fishing to threshold, MSY is still 29.55443
 # if fishing to a target of 1.2BMSY, long term average equilibrium catch = long term average production at 1.2BMSY
 # following Schaefer model...
 New_B_targ = 1.2 * New_BMSY
 New_targ_catch = r * New_B_targ * (1 - New_B_targ / New_K_check)
-# > New_targ_catch
-# [1] 28.37225 
-# so, if population at not overfished, and in new regime of reduced environmnetal production at env=-0.5,
-# then target catch would be 28.37225
+New_targ_catch
 
-# Note, the above would not apply if depensation were assumed NOT to occur. That is, the "environmental regime shift"
-# hypothesis would only potentially be consistend with a model allowing for environmental effects (and without depensation)
-# In the paper by Marks et al, the "best" fitting model was that allowing for both environmental effects and depensatory effects. 
+# Note, the above would not apply if depensation were assumed NOT to occur.
+# In the paper by Marks et al, the "best" fitting model was that allowing for both environmental effects 
+# and depensatory effects. 
 
-# End of regime shift question
+# End of productivity change question
 # ----------------------------
 
 
@@ -220,12 +203,15 @@ VarCov_res = Calc_variance_covariance_matrix(obj_TMB)
 # get model estimates and associated uncertainty from parametric resampling  
 nreps = 200
 ResampRes = Get_model_outputs_from_resampling(DatFromCSVFile, bdm_params, obj_TMB, VarCov_res, model_outputs, nreps, use60CL_for_Biom=F)
+ResampRes$param_est
 
 # plot observed vs expected cpue
 Plot_Obs_vs_Exp_CPUE_resamp(DatFromCSVFile, ResampRes, xaxis_lab=NA)
 
+# get estimates of MSY and BMSY, for specified environmental condition, with uncertainty, from resampling
+Get_MSY_and_BMSY_with_err(mod_type, mod_option, ResampRes, env)
+
 # plot biomass, catch and exploitation
 Plot_Biomass_Catch_And_Exploitation_Resamp(DatFromCSVFile, mod_type, mod_option, ResampRes, param_results, xaxis_lab=NA)
 
-# get estimates of MSY and BMSY, for specified environmental condition, with uncertainty, from resampling
-Get_MSY_and_BMSY_with_err(mod_type, mod_option, ResampRes, env)
+

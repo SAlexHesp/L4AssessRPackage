@@ -99,6 +99,7 @@ Get_yaxis_scale <- function(y_data) {
 #' without any link to an environmental index, the value should be set to zero. Set
 #' initial values for all parameters, whether estimated or not.
 #'
+#' @param pInit initial level of relative biomass for population
 #' @param ln_K natural log of initial value for population carrying capacity.
 #' @param ln_r natural log of initial value for population intrinsic increase.
 #' @param ln_q1 natural log of initial value for catchability param for 1st CPUE series.
@@ -118,7 +119,7 @@ Get_yaxis_scale <- function(y_data) {
 #' @return object containing initial values of model parameters for input into the model
 #'
 #' @examples
-#' nyrs = 44
+#' pInit = 1.0
 #' ln_K = log(8000)
 #' ln_r = log(0.5)
 #' ln_q1 = -10
@@ -134,17 +135,16 @@ Get_yaxis_scale <- function(y_data) {
 #' FF = rep(-2, nyrs)
 #' EpsR = rep(0, times=nyrs)
 #' ln_SigmaR = log(0.3)
-#' bdm_params = Set_InitValsForBDM_Params(ln_K, ln_r, ln_q1, ln_q2, ln_q3, ln_q4, ln_sd1, ln_sd2,
+#' bdm_params = Set_InitValsForBDM_Params(pInit, ln_K, ln_r, ln_q1, ln_q2, ln_q3, ln_q4, ln_sd1, ln_sd2,
 #'                                        ln_sd3,ln_sd4, env_p, lndep, ln_pt_parm, FF, EpsR)
 #' @export
-Set_InitValsForBDM_Params <- function(ln_K, ln_r, ln_q1, ln_q2, ln_q3, ln_q4, ln_sd1, ln_sd2,
+Set_InitValsForBDM_Params <- function(pInit, ln_K, ln_r, ln_q1, ln_q2, ln_q3, ln_q4, ln_sd1, ln_sd2,
                                       ln_sd3,ln_sd4, env_p, lndep, ln_pt_parm, FF, EpsR) {
 
 
-  bdm_parameters <- list(ln_K=ln_K, ln_r=ln_r, ln_q1=ln_q1, ln_q2=ln_q2, ln_q3=ln_q3,ln_q4=ln_q4,
-                         ln_sd1=ln_sd1, ln_sd2=ln_sd2, ln_sd3=ln_sd3,ln_sd4=ln_sd4,
-                         env_p=env_p, lndep=lndep, ln_pt_parm=ln_pt_parm,
-                         FF=FF, EpsR=EpsR)
+  bdm_parameters <- list(pInit=pInit, ln_K=ln_K, ln_r=ln_r, ln_q1=ln_q1, ln_q2=ln_q2, ln_q3=ln_q3,
+                         ln_q4=ln_q4, ln_sd1=ln_sd1, ln_sd2=ln_sd2, ln_sd3=ln_sd3,ln_sd4=ln_sd4,
+                         env_p=env_p, lndep=lndep, ln_pt_parm=ln_pt_parm, FF=FF, EpsR=EpsR)
 
 
   result = bdm_parameters
@@ -164,6 +164,7 @@ Set_InitValsForBDM_Params <- function(ln_K, ln_r, ln_q1, ln_q2, ln_q3, ln_q4, ln
 #' @param ln_sdmod_params_bnds natural log of initial value for catchability param for 2nd CPUE series. Set to NA if only 1 CPUE series.
 #' @param env_param_bnds natural log of initial value for catchability param for 3rd CPUE series. Set to NA if 2 CPUE series.
 #' @param ln_dep_param_bnds natural log of initial value for catchability param for 4th CPUE series. Set to NA if 3 CPUE series.
+#' @param pInit_bnds initial level of relative biomass for population.
 #'
 #' @return object containing lower and upper bounds of model parameters for input into the model
 #'
@@ -175,11 +176,12 @@ Set_InitValsForBDM_Params <- function(ln_K, ln_r, ln_q1, ln_q2, ln_q3, ln_q4, ln
 #' env_param_bnds <- c(-20,20)
 #' ln_dep_bnds <- c(-20,0)
 #' ln_pt_bnds <- c(-20,0)
+#' pInit_bnds = c(0,1)
 #' bdm_param_bounds = Set_BoundsForBDM_Params(ln_K_bnds, ln_r_bnds, ln_q_bnds, ln_sd_bnds,
-#'                                          env_param_bnds, ln_dep_bnds, ln_pt_bnds)
+#'                                          env_param_bnds, ln_dep_bnds, ln_pt_bnds, pInit_bnds)
 #' @export
 Set_BoundsForBDM_Params <- function(ln_K_bnds, ln_r_bnds, ln_q_bnds, ln_sd_bnds,
-                                    env_param_bnds, ln_dep_bnds, ln_pt_bnds) {
+                                    env_param_bnds, ln_dep_bnds, ln_pt_bnds, pInit_bnds) {
 
   # create lists of upper and lower bounds
   low_bound_list <- list(ln_K_low=ln_K_bnds[1],
@@ -194,7 +196,8 @@ Set_BoundsForBDM_Params <- function(ln_K_bnds, ln_r_bnds, ln_q_bnds, ln_sd_bnds,
                          ln_sd4_low=ln_sd_bnds[1],
                          env_param_low=env_param_bnds[1],
                          lndep_low=ln_dep_bnds[1],
-                         ln_pt_parm_low=ln_pt_bnds[1])
+                         ln_pt_parm_low=ln_pt_bnds[1],
+                         pInit_low=pInit_bnds[1])
 
   upp_bound_list <- list(ln_K_high=ln_K_bnds[2],
                          ln_r_high=ln_r_bnds[2],
@@ -208,7 +211,8 @@ Set_BoundsForBDM_Params <- function(ln_K_bnds, ln_r_bnds, ln_q_bnds, ln_sd_bnds,
                          ln_sd4_high=ln_sd_bnds[2],
                          env_param_high=env_param_bnds[2],
                          lndep_high=ln_dep_bnds[2],
-                         ln_pt_parm_high=ln_pt_bnds[2])
+                         ln_pt_parm_high=ln_pt_bnds[2],
+                         pInit_high=pInit_bnds[2])
 
   result = list(low_bound_list = low_bound_list,
                 upp_bound_list = upp_bound_list)
@@ -265,7 +269,7 @@ Get_BDM_Data <- function(DatFromCSVFile, wt_param_pen, wt_depl_pen, wt_biom_pen,
   last_cpue4_yr = ifelse(cpue4_nyrs>0, max(dat$year[!is.na(dat$cpue4)]), 0)
 
   bdm_param_bounds = Set_BoundsForBDM_Params(ln_K_bnds, ln_r_bnds, ln_q_bnds, ln_sd_bnds,
-                                             env_param_bnds, ln_dep_bnds, ln_pt_bnds)
+                                             env_param_bnds, ln_dep_bnds, ln_pt_bnds, pInit_bnds)
   temp_uppbound=bdm_param_bounds$upp_bound_list
   temp_lowbound=bdm_param_bounds$low_bound_list
   uppbound = unlist(temp_uppbound, use.names = F)
@@ -326,6 +330,7 @@ Get_BDM_Data <- function(DatFromCSVFile, wt_param_pen, wt_depl_pen, wt_biom_pen,
 #' @param DatFromCSVFile Data object read in from a csv file, containing all model time series data
 #' @param mod_scenario 1=non-state space, 2=state space
 #' @param mod_option 1=traditional, 2= +chl, 3= +dep, 3 = +chl and dep
+#' @param fix_pInit map option to fix pInit parameter 1=yes, 0=no
 #'
 #' @return List of model parameters that should not be estimated using TMB
 #'
@@ -333,50 +338,51 @@ Get_BDM_Data <- function(DatFromCSVFile, wt_param_pen, wt_depl_pen, wt_biom_pen,
 #' mod_scenario = 2 # 1=non-state space, 2=state space
 #' model_option = 1 # 1=traditional, 2= +chl, 3= +dep, 3 = +chl and dep
 #' nyrs = 44
-#' Get_BDM_Map(DatFromCSVFile, mod_option, mod_scenario)
+#' Get_BDM_Map(DatFromCSVFile, mod_option, mod_scenario, fix_pInit)
 #' @export
-Get_BDM_Map <- function(DatFromCSVFile, mod_scenario, mod_option) {
-
+Get_BDM_Map <- function(DatFromCSVFile, mod_scenario, mod_option, fix_pInit) {
 
   bdm_map <- NULL
+
   # if model type is schaefer or Fox
   if (mod_scenario == 1 & mod_type %in% c(1,2)) {
-    bdm_map <- list(ln_pt_parm=factor(NA),env_p=factor(NA), lndep=factor(NA), ln_sd1=factor(NA),
+    bdm_map <- list(pInit=factor(NA),ln_pt_parm=factor(NA),env_p=factor(NA), lndep=factor(NA), ln_sd1=factor(NA),
                     ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA),
                     EpsR=rep(factor(NA), times=nyrs))
+
     if(mod_option==2 & mod_type %in% c(1,2)) {
-      bdm_map <- list(ln_pt_parm=factor(NA),lndep=factor(NA), ln_sd1=factor(NA),
+      bdm_map <- list(pInit=factor(NA),ln_pt_parm=factor(NA),lndep=factor(NA), ln_sd1=factor(NA),
                       ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA),
                       EpsR=rep(factor(NA), times=nyrs))
     }
     if(mod_option==3 & mod_type %in% c(1,2)) {
-      bdm_map <- list(ln_pt_parm=factor(NA),env_p=factor(NA), ln_sd1=factor(NA),
+      bdm_map <- list(pInit=factor(NA),ln_pt_parm=factor(NA),env_p=factor(NA), ln_sd1=factor(NA),
                       ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA),
                       EpsR=rep(factor(NA), times=nyrs))
     }
     if(mod_option==4 & mod_type %in% c(1,2)) {
-      bdm_map <- list(ln_pt_parm=factor(NA), ln_sd1=factor(NA),
+      bdm_map <- list(pInit=factor(NA),ln_pt_parm=factor(NA), ln_sd1=factor(NA),
                       ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA),
                       EpsR=rep(factor(NA), times=nyrs))
     }
   }
   # if model type is PT
   if(mod_scenario == 1 & mod_type==3){
-    bdm_map <- list(env_p=factor(NA), lndep=factor(NA),ln_sd1=factor(NA), ln_pt_parm=factor(NA),
+    bdm_map <- list(pInit=factor(NA),env_p=factor(NA), lndep=factor(NA),ln_sd1=factor(NA), ln_pt_parm=factor(NA),
                     ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA),
                     EpsR=rep(factor(NA), times=nyrs))
     if(mod_option==2  & mod_type==3) {
-      bdm_map <- list(lndep=factor(NA), ln_sd1=factor(NA), ln_pt_parm=factor(NA),
+      bdm_map <- list(pInit=factor(NA),lndep=factor(NA), ln_sd1=factor(NA), ln_pt_parm=factor(NA),
                       ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA),
                       EpsR=rep(factor(NA), times=nyrs))
     }
     if(mod_option==3  & mod_type==3) {
-      bdm_map <- list(env_p=factor(NA), ln_sd1=factor(NA), ln_pt_parm=factor(NA),
+      bdm_map <- list(pInit=factor(NA),env_p=factor(NA), ln_sd1=factor(NA), ln_pt_parm=factor(NA),
                       ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA),
                       EpsR=rep(factor(NA), times=nyrs))
     }
     if(mod_option==4  & mod_type==3) {
-      bdm_map <- list(ln_sd1=factor(NA),
+      bdm_map <- list(pInit=factor(NA),ln_sd1=factor(NA),
                       ln_pt_parm=factor(NA),
                       ln_q2=factor(NA),ln_q3=factor(NA),ln_q4=factor(NA),
                       EpsR=rep(factor(NA), times=nyrs))
@@ -385,22 +391,22 @@ Get_BDM_Map <- function(DatFromCSVFile, mod_scenario, mod_option) {
   # if model type is schaefer or Fox
   if(mod_scenario==2 & mod_type %in% c(1,2)) {
 
-    bdm_map <- list(ln_pt_parm=factor(NA), ln_sd1=factor(NA),
+    bdm_map <- list(pInit=factor(NA),ln_pt_parm=factor(NA), ln_sd1=factor(NA),
                     ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA),
                     env_p=factor(NA), lndep=factor(NA))
 
     if(mod_option==2 & mod_type %in% c(1,2)) {
-      bdm_map <- list(ln_pt_parm=factor(NA), ln_sd1=factor(NA),
+      bdm_map <- list(pInit=factor(NA),ln_pt_parm=factor(NA), ln_sd1=factor(NA),
                       ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA),
                       lndep=factor(NA))
     }
     if(mod_option==3 & mod_type %in% c(1,2)) {
-      bdm_map <- list(ln_pt_parm=factor(NA), ln_sd1=factor(NA),
+      bdm_map <- list(pInit=factor(NA),ln_pt_parm=factor(NA), ln_sd1=factor(NA),
                       ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA),
                       env_p=factor(NA))
     }
     if(mod_option==4 & mod_type %in% c(1,2)) {
-      bdm_map <- list(ln_pt_parm=factor(NA), ln_sd1=factor(NA),
+      bdm_map <- list(pInit=factor(NA),ln_pt_parm=factor(NA), ln_sd1=factor(NA),
                       ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA)) # all params included
     }
   }
@@ -408,26 +414,20 @@ Get_BDM_Map <- function(DatFromCSVFile, mod_scenario, mod_option) {
   if(mod_scenario==2 & mod_type==3) {
 
     # For mod_option 1 and 3, set env_param to zero
-    bdm_map <- list(
-      ln_sd1=factor(NA),ln_pt_parm=factor(NA),
-      ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA),
-      env_p=factor(NA), lndep=factor(NA))
+    bdm_map <- list(pInit=factor(NA),ln_sd1=factor(NA),ln_pt_parm=factor(NA),
+                    ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA),
+                    env_p=factor(NA), lndep=factor(NA))
     if(mod_option==2 & mod_type==3) {
-      bdm_map <- list(
-        ln_sd1=factor(NA), ln_pt_parm=factor(NA),
-        ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA),
-        lndep=factor(NA))
+      bdm_map <- list(pInit=factor(NA),ln_sd1=factor(NA), ln_pt_parm=factor(NA),
+                 ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA),lndep=factor(NA))
     }
     if(mod_option==3 & mod_type==3) {
-      bdm_map <- list(
-        ln_sd1=factor(NA), ln_pt_parm=factor(NA),
-        ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA),
-        env_p=factor(NA))
+      bdm_map <- list(pInit=factor(NA),ln_sd1=factor(NA), ln_pt_parm=factor(NA),
+                 ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA),env_p=factor(NA))
     }
     if(mod_option==4 & mod_type==3) {
-      bdm_map <- list(
-        ln_sd1=factor(NA), ln_pt_parm=factor(NA),
-        ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA)) # all params included
+      bdm_map <- list(pInit=factor(NA), ln_sd1=factor(NA), ln_pt_parm=factor(NA),
+                 ln_sd2=factor(NA),ln_sd3=factor(NA), ln_sd4=factor(NA)) # all params included
     }
   }
 
@@ -440,6 +440,10 @@ Get_BDM_Map <- function(DatFromCSVFile, mod_scenario, mod_option) {
   if (nCPUE3Obs==0) bdm_map$ln_q3=factor(NA)
   nCPUE4Obs = length(which(!is.na(dat$obs_ln_cpue4)))
   if (nCPUE4Obs==0) bdm_map$ln_q4=factor(NA)
+
+  if (fix_pInit == 0) { # estimate pInit parameter
+    bdm_map[[1]] <- NULL
+  }
 
   return(bdm_map)
 
@@ -696,13 +700,14 @@ Get_model_parameter_outputs <- function(result, mod_type, mod_option) {
 #' @param mod_option 1=traditional, 2=chl, 3=dep, 4=chl and dep
 #' @param bdm_data object containing input data for TMB model
 #' @param bdm_params object containing parameters for TMB model
+#' @param fix_pInit map option to fix pInit parameter 1=yes, 0=no
 #' @param bdm_map object containing parameter map for TMB model
 #' @param initial_params optional input to input starting values when fitting state space model
 #'
 #' @return multiple objects with output from TMB  (rep_TMB, fit_TMB, obj_TMB, best_par_TMB, best_fitted_par_TMB, best_val_TMB, new_bdm_map)
 #' @export
 fit_the_model <- function(DatFromCSVFile, mod_scenario, mod_type, mod_option,
-                          bdm_data, bdm_params, bdm_map=NULL,
+                          bdm_data, bdm_params, fix_pInit, bdm_map=NULL,
                           initial_params=NULL, nyrs) {
 
   new_bdm_data <- bdm_data
@@ -717,7 +722,7 @@ fit_the_model <- function(DatFromCSVFile, mod_scenario, mod_type, mod_option,
   new_bdm_map <- bdm_map
   if (is.null(bdm_map)) {
     # A map list was not provided. Determine the list from the model option and scenario
-    new_bdm_map <- Get_BDM_Map(DatFromCSVFile, mod_scenario, mod_option)
+    new_bdm_map <- Get_BDM_Map(DatFromCSVFile, mod_scenario, mod_option, fix_pInit)
   }
 
   cat("Map used in fitting the model: \n")
@@ -979,18 +984,19 @@ Get_MSY_and_BMSY_with_err <- function(mod_type, mod_option, ResampRes, env) {
     MSY_sim[i] <- MSYRes$MSY
     Bmsy_sim[i] <- MSYRes$Bmsy
   }
-  MSY_resamp_mean = mean(MSY_sim)
-  MSY_resamp_med = median(MSY_sim)
-  MSY_resamp_lw95 = quantile(MSY_sim,0.025)
-  MSY_resamp_up95 = quantile(MSY_sim,0.975)
-  MSY_resamp_lw60 = quantile(MSY_sim,0.2)
-  MSY_resamp_up60 = quantile(MSY_sim,0.8)
-  Bmsy_resamp_mean = mean(Bmsy_sim)
-  Bmsy_resamp_med = median(Bmsy_sim)
-  Bmsy_resamp_lw95 = quantile(Bmsy_sim,0.025)
-  Bmsy_resamp_up95 = quantile(Bmsy_sim,0.975)
-  Bmsy_resamp_lw60 = quantile(Bmsy_sim,0.2)
-  Bmsy_resamp_up60 = quantile(Bmsy_sim,0.8)
+
+  MSY_resamp_mean = mean(na.omit(MSY_sim))
+  MSY_resamp_med = median(na.omit(MSY_sim))
+  MSY_resamp_lw95 = quantile(na.omit(MSY_sim),0.025)
+  MSY_resamp_up95 = quantile(na.omit(MSY_sim),0.975)
+  MSY_resamp_lw60 = quantile(na.omit(MSY_sim),0.2)
+  MSY_resamp_up60 = quantile(na.omit(MSY_sim),0.8)
+  Bmsy_resamp_mean = mean(na.omit(Bmsy_sim))
+  Bmsy_resamp_med = median(na.omit(Bmsy_sim))
+  Bmsy_resamp_lw95 = quantile(na.omit(Bmsy_sim),0.025)
+  Bmsy_resamp_up95 = quantile(na.omit(Bmsy_sim),0.975)
+  Bmsy_resamp_lw60 = quantile(na.omit(Bmsy_sim),0.2)
+  Bmsy_resamp_up60 = quantile(na.omit(Bmsy_sim),0.8)
 
   MSY_sim_res = data.frame(MSY_mean=MSY_resamp_mean,
                            MSY_med=MSY_resamp_med,
@@ -1048,11 +1054,12 @@ Plot_Biomass_Catch_And_Exploitation <- function(DatFromCSVFile, mod_type, mod_op
   ymax = ylims$ymax
   yint = ylims$yint
   plot(model_outputs$season, model_outputs$biom, type="l", lwd=1, ylim=c(0,ymax),
-       xlab=xaxis_lab, ylab="", las=1)
+       xlab="", ylab="", las=1)
   x <- c(year,rev(year))
   y <- c(model_outputs$biom_low,rev(model_outputs$biom_upp))
   polygon(x,y,col=rgb(0.2,0.2,0.2,0.2), border=NA)
-  mtext("Biomass, t",side=2,line=3,cex=0.7)
+  mtext(xaxis_lab,side=1,line=2,cex=1)
+  mtext("Biomass, t",side=2,line=3,cex=1)
   legend("topleft",paste("a)"),bty="n")
 
   # (2) Relative Biomass----
@@ -1064,8 +1071,9 @@ Plot_Biomass_Catch_And_Exploitation <- function(DatFromCSVFile, mod_type, mod_op
   ymax = ylims$ymax
   yint = ylims$yint
   plot(year,model_outputs$relbiom, type="l", ylim=c(0,ymax), lwd=1,
-       xlab=xaxis_lab, ylab="", las=1)
-  mtext("Relative Biomass", side=2,line=2.5,cex=0.7)
+       xlab="", ylab="", las=1)
+  mtext(xaxis_lab,side=1,line=2,cex=1)
+  mtext("Relative Biomass", side=2,line=2.5,cex=1)
   x <- c(year,rev(year))
   y <- c(model_outputs$relbiom_low,rev(model_outputs$relbiom_upp))
   polygon(x,y,col=rgb(0.2,0.2,0.2,0.2), border=NA)
@@ -1077,8 +1085,9 @@ Plot_Biomass_Catch_And_Exploitation <- function(DatFromCSVFile, mod_type, mod_op
   ymax = ylims$ymax
   yint = ylims$yint
   plot(dat$year,dat$tot_catch, type="p", ylim=c(0,ymax), pch=21,
-       xlab=xaxis_lab, ylab="", las=1)
-  mtext("Catch, t",side=2,line=2.5,cex=0.7)
+       xlab="", ylab="", las=1)
+  mtext(xaxis_lab,side=1,line=2,cex=1)
+  mtext("Catch, t",side=2,line=2.5,cex=1)
   lines(model_outputs$season,model_outputs$Chat, type="l", lwd=1)
   x <- c(year,rev(year))
   y <- c(model_outputs$Chat_low,rev(model_outputs$Chat_upp))
@@ -1092,8 +1101,9 @@ Plot_Biomass_Catch_And_Exploitation <- function(DatFromCSVFile, mod_type, mod_op
   ymax = ylims$ymax
   yint = ylims$yint
   plot(model_outputs$season,model_outputs$Expl, type="l", lwd=1, ylim=c(0,ymax),
-       xlab=xaxis_lab, ylab="", las=1)
-  mtext("Exploitation",side=2,line=2.5,cex=0.7)
+       xlab="", ylab="", las=1)
+  mtext(xaxis_lab,side=1,line=2,cex=1)
+  mtext("Exploitation",side=2,line=2.5,cex=1)
   x <- c(year,rev(year))
   y <- c(model_outputs$Expl_low,rev(model_outputs$Expl_upp))
   polygon(x,y,col=rgb(0.2,0.2,0.2,0.2), border=NA)
@@ -1141,11 +1151,12 @@ Plot_Biomass_Catch_And_Exploitation_Resamp <- function(DatFromCSVFile, mod_type,
   ymax = ylims$ymax
   yint = ylims$yint
   plot(year, ResampRes$model_outputs2$biom, type="l", lwd=1, ylim=c(0,ymax),
-       xlab=xaxis_lab, ylab="", las=1)
+       xlab="", ylab="", las=1, cex=1)
   x <- c(year,rev(year))
   y <- c(ResampRes$model_outputs2$biom_low,rev(ResampRes$model_outputs2$biom_upp))
   polygon(x,y,col=rgb(0.2,0.2,0.2,0.2), border=NA)
-  mtext("Biomass, t",side=2,line=3,cex=0.7)
+  mtext(xaxis_lab,side=1,line=2,cex=1)
+  mtext("Biomass, t",side=2,line=3,cex=1)
   legend("topleft",paste("a)"),bty="n")
 
   # (2) Relative Biomass----
@@ -1157,8 +1168,9 @@ Plot_Biomass_Catch_And_Exploitation_Resamp <- function(DatFromCSVFile, mod_type,
   ymax = ylims$ymax
   yint = ylims$yint
   plot(year,ResampRes$model_outputs2$relbiom, type="l", ylim=c(0,ymax), lwd=1,
-       xlab=xaxis_lab, ylab="", las=1)
-  mtext("Relative Biomass", side=2,line=2.5,cex=0.7)
+       xlab="", ylab="", las=1)
+  mtext(xaxis_lab,side=1,line=2,cex=1)
+  mtext("Relative Biomass", side=2,line=2.5,cex=1)
   x <- c(year,rev(year))
   y <- c(ResampRes$model_outputs2$relbiom_low,rev(ResampRes$model_outputs2$relbiom_upp))
   polygon(x,y,col=rgb(0.2,0.2,0.2,0.2), border=NA)
@@ -1170,14 +1182,15 @@ Plot_Biomass_Catch_And_Exploitation_Resamp <- function(DatFromCSVFile, mod_type,
   ymax = ylims$ymax
   yint = ylims$yint
   plot(dat$year,dat$tot_catch, type="p", ylim=c(0,ymax), pch=21,
-       xlab=xaxis_lab, ylab="", las=1)
-  mtext("Catch, t",side=2,line=2.5,cex=0.7)
+       xlab="", ylab="", las=1)
+  mtext(xaxis_lab,side=1,line=2,cex=1)
+  mtext("Catch, t",side=2,line=2.5,cex=1)
   lines(ResampRes$model_outputs2$season,ResampRes$model_outputs2$Chat, type="l", lwd=1)
   x <- c(year,rev(year))
   y <- c(ResampRes$model_outputs2$Chat_low,rev(ResampRes$model_outputs2$Chat_upp))
   polygon(x,y, col=rgb(0.2,0.2,0.2,0.3), border=NA)
   abline(h=c(Calc_MSYAndBiolRefPoints(mod_type, mod_option, param_results, env=0)$MSY), lty=c(1,3,3), col=c(2,2,2))
-  legend("topright",paste("MSY ", round(Calc_MSYAndBiolRefPoints(mod_type, mod_option, param_results, env=0)$MSY1),"t"), bty="n")
+  legend("topright",paste("MSY ", round(Calc_MSYAndBiolRefPoints(mod_type, mod_option, param_results, env=0)$MSY),"t"), bty="n")
   legend("topleft",paste("c)"),bty="n")
 
   ## (4) exploitation ----
@@ -1185,8 +1198,9 @@ Plot_Biomass_Catch_And_Exploitation_Resamp <- function(DatFromCSVFile, mod_type,
   ymax = ylims$ymax
   yint = ylims$yint
   plot(ResampRes$model_outputs2$season,ResampRes$model_outputs2$Expl, type="l", lwd=1, ylim=c(0,ymax),
-       xlab=xaxis_lab, ylab="", las=1)
-  mtext("Exploitation",side=2,line=2.5,cex=0.7)
+       xlab="", ylab="", las=1)
+  mtext(xaxis_lab,side=1,line=2,cex=1)
+  mtext("Exploitation",side=2,line=2.5,cex=1)
   x <- c(year,rev(year))
   y <- c(ResampRes$model_outputs2$Expl_low,rev(ResampRes$model_outputs2$Expl_upp))
   polygon(x,y,col=rgb(0.2,0.2,0.2,0.2), border=NA)
@@ -1240,8 +1254,9 @@ Plot_Obs_vs_Exp_CPUE <- function(DatFromCSVFile, model_outputs, xaxis_lab="Year"
     y_max = ylims$ymax
     y_min = ylims$ymin
     plot(dat$year,dat$obs_ln_cpue1, type="p", ylim=c(y_min,y_max),
-         xlab=xaxis_lab, ylab="", las=1)
-    mtext("lnCPUE",side=2,line=2.5,cex=0.7)
+         xlab="", ylab="", las=1)
+    mtext(xaxis_lab,side=1,line=2,cex=1)
+    mtext("lnCPUE",side=2,line=2.5,cex=1)
     arrows(dat$year,dat$obs_ln_cpue1+1.96*dat$cpue1_se,
            dat$year,dat$obs_ln_cpue1-1.96*dat$cpue1_se,angle=90,code=3,length=0)
     x <-c(first_cpue1_yr:last_cpue1_yr,last_cpue1_yr:first_cpue1_yr)
@@ -1258,8 +1273,9 @@ Plot_Obs_vs_Exp_CPUE <- function(DatFromCSVFile, model_outputs, xaxis_lab="Year"
     y_max = ylims$ymax
     y_min = ylims$ymin
     plot(dat$year,dat$obs_ln_cpue2, type="p", ylim=c(y_min,y_max),
-         xlab=xaxis_lab, ylab="", las=1)
-    mtext("lnCPUE",side=2,line=2.5,cex=0.7)
+         xlab="", ylab="", las=1)
+    mtext(xaxis_lab,side=1,line=2,cex=1)
+    mtext("lnCPUE",side=2,line=2.5,cex=1)
     arrows(dat$year,dat$obs_ln_cpue2+1.96*dat$cpue2_se,
            dat$year,dat$obs_ln_cpue2-1.96*dat$cpue2_se,angle=90,code=3,length=0)
     x <-c(first_cpue2_yr:last_cpue2_yr,last_cpue2_yr:first_cpue2_yr)
@@ -1276,8 +1292,9 @@ Plot_Obs_vs_Exp_CPUE <- function(DatFromCSVFile, model_outputs, xaxis_lab="Year"
     y_max = ylims$ymax
     y_min = ylims$ymin
     plot(dat$year,dat$obs_ln_cpue3, type="p", ylim=c(y_min,y_max),
-         xlab=xaxis_lab, ylab="", las=1)
-    mtext("lnCPUE",side=2,line=2.5,cex=0.7)
+         xlab="", ylab="", las=1)
+    mtext(xaxis_lab,side=1,line=2,cex=1)
+    mtext("lnCPUE",side=2,line=2.5,cex=1)
     arrows(dat$year,dat$obs_ln_cpue3+1.96*dat$cpue3_se,
            dat$year,dat$obs_ln_cpue3-1.96*dat$cpue3_se,angle=90,code=3,length=0)
     x <-c(first_cpue3_yr:last_cpue3_yr,last_cpue3_yr:first_cpue3_yr)
@@ -1294,8 +1311,9 @@ Plot_Obs_vs_Exp_CPUE <- function(DatFromCSVFile, model_outputs, xaxis_lab="Year"
     y_max = ylims$ymax
     y_min = ylims$ymin
     plot(dat$year,dat$obs_ln_cpue4, type="p", ylim=c(y_min,y_max),
-         xlab=xaxis_lab, ylab="", las=1)
-    mtext("lnCPUE",side=2,line=2.5,cex=0.7)
+         xlab="", ylab="", las=1)
+    mtext(xaxis_lab,side=1,line=2,cex=1)
+    mtext("lnCPUE",side=2,line=2.5,cex=1)
     arrows(dat$year,dat$obs_ln_cpue4+1.96*dat$cpue4_se,
            dat$year,dat$obs_ln_cpue4-1.96*dat$cpue4_se,angle=90,code=3,length=0)
     x <-c(first_cpue4_yr:last_cpue4_yr,last_cpue4_yr:first_cpue4_yr)
@@ -1348,8 +1366,9 @@ Plot_Obs_vs_Exp_CPUE_resamp <- function(DatFromCSVFile, ResampRes, xaxis_lab="Ye
     y_max = ylims$ymax
     y_min = ylims$ymin
     plot(dat$year,dat$obs_ln_cpue1, type="p", ylim=c(y_min,y_max),
-         xlab=xaxis_lab, ylab="", las=1)
-    mtext("lnCPUE",side=2,line=2.5,cex=0.7)
+         xlab="", ylab="", las=1)
+    mtext(xaxis_lab,side=1,line=2,cex=1)
+    mtext("lnCPUE",side=2,line=2.5,cex=1)
     arrows(dat$year,dat$obs_ln_cpue1+1.96*dat$cpue1_se,
            dat$year,dat$obs_ln_cpue1-1.96*dat$cpue1_se,angle=90,code=3,length=0)
     x <-c(first_cpue1_yr:last_cpue1_yr,last_cpue1_yr:first_cpue1_yr)
@@ -1366,8 +1385,9 @@ Plot_Obs_vs_Exp_CPUE_resamp <- function(DatFromCSVFile, ResampRes, xaxis_lab="Ye
     y_max = ylims$ymax
     y_min = ylims$ymin
     plot(dat$year,dat$obs_ln_cpue2, type="p", ylim=c(y_min,y_max),
-         xlab=xaxis_lab, ylab="", las=1)
-    mtext("lnCPUE",side=2,line=2.5,cex=0.7)
+         xlab="", ylab="", las=1)
+    mtext(xaxis_lab,side=1,line=2,cex=1)
+    mtext("lnCPUE",side=2,line=2.5,cex=1)
     arrows(dat$year,dat$obs_ln_cpue2+1.96*dat$cpue2_se,
            dat$year,dat$obs_ln_cpue2-1.96*dat$cpue2_se,angle=90,code=3,length=0)
     x <-c(first_cpue2_yr:last_cpue2_yr,last_cpue2_yr:first_cpue2_yr)
@@ -1384,8 +1404,9 @@ Plot_Obs_vs_Exp_CPUE_resamp <- function(DatFromCSVFile, ResampRes, xaxis_lab="Ye
     y_max = ylims$ymax
     y_min = ylims$ymin
     plot(dat$year,dat$obs_ln_cpue3, type="p", ylim=c(y_min,y_max),
-         xlab=xaxis_lab, ylab="", las=1)
-    mtext("lnCPUE",side=2,line=2.5,cex=0.7)
+         xlab="", ylab="", las=1)
+    mtext(xaxis_lab,side=1,line=2,cex=1)
+    mtext("lnCPUE",side=2,line=2.5,cex=1)
     arrows(dat$year,dat$obs_ln_cpue3+1.96*dat$cpue3_se,
            dat$year,dat$obs_ln_cpue3-1.96*dat$cpue3_se,angle=90,code=3,length=0)
     x <-c(first_cpue3_yr:last_cpue3_yr,last_cpue3_yr:first_cpue3_yr)
@@ -1402,8 +1423,9 @@ Plot_Obs_vs_Exp_CPUE_resamp <- function(DatFromCSVFile, ResampRes, xaxis_lab="Ye
     y_max = ylims$ymax
     y_min = ylims$ymin
     plot(dat$year,dat$obs_ln_cpue4, type="p", ylim=c(y_min,y_max),
-         xlab=xaxis_lab, ylab="", las=1)
-    mtext("lnCPUE",side=2,line=2.5,cex=0.7)
+         xlab="", ylab="", las=1)
+    mtext(xaxis_lab,side=1,line=2,cex=1)
+    mtext("lnCPUE",side=2,line=2.5,cex=1)
     arrows(dat$year,dat$obs_ln_cpue4+1.96*dat$cpue4_se,
            dat$year,dat$obs_ln_cpue4-1.96*dat$cpue4_se,angle=90,code=3,length=0)
     x <-c(first_cpue4_yr:last_cpue4_yr,last_cpue4_yr:first_cpue4_yr)
@@ -1444,10 +1466,11 @@ Plot_Obs_vs_Exp_Env_Index <- function(DatFromCSVFile, model_outputs, xaxis_lab=N
   }
 
   plot(dat$year,dat$obs_env, type="p", ylim=c(y_min,y_max),
-       xlab=xaxis_lab, ylab="", las=1)
+       xlab="", ylab="", las=1)
   lines(dat$year, dat$obs_env, lty="solid")
   lines(dat$year, model_outputs$est_env, lty="dotted")
-  mtext("env. index",side=2,line=2.5,cex=0.7)
+  mtext(xaxis_lab,side=1,line=2,cex=1)
+  mtext("env. index",side=2,line=2.5,cex=1)
   arrows(dat$year,dat$obs_env+1.96*dat$env_se,
          dat$year,dat$obs_env-1.96*dat$env_se,angle=90,code=3,length=0)
   x <-c(dat$year,rev(dat$year))
@@ -1470,7 +1493,8 @@ Plot_Obs_vs_Exp_Env_Index <- function(DatFromCSVFile, model_outputs, xaxis_lab=N
 Plot_Kobe_Plot <- function(DatFromCSVFile, model_outputs) {
 
   plot(model_outputs$relbiom,model_outputs$Expl, type="l",xlim=c(0,max(model_outputs$relbiom)), ylim=c(0, max(model_outputs$Expl)),
-       xlab="Relative Biomass", ylab="", las=1)
+       xlab="", ylab="", las=1)
+  mtext("Relative Biomass",side=1,line=2,cex=1)
   mtext("Exploitation",side=2,line=2.5,cex=1)
   zeroval = -0.05
   uppval <- 1.5
@@ -1514,8 +1538,10 @@ Plot_Estimated_Random_Effects <- function(DatFromCSVFile, model_outputs) {
   year <- model_outputs$season
   y_min <- min(model_outputs$EpsR_low) # set y-axis limit)
   y_max <- max(model_outputs$EpsR_upp) # set y-axis limit
-  plot(dat$year,model_outputs$EpsR, xlab="Year",ylab="EpsR", ylim=c(y_min,y_max), type="l")
+  plot(dat$year,model_outputs$EpsR, xlab="",ylab="", ylim=c(y_min,y_max), type="l")
   x <- c(dat$year, rev(dat$year))
+  mtext("Year Biomass",side=1,line=2,cex=1)
+  mtext("EpsR",side=2,line=2.5,cex=1)
   y <- c(model_outputs$EpsR_low,rev(model_outputs$EpsR_upp))
   polygon(x,y,col=rgb(0.2,0.2,0.2,0.2), border=NA)
   abline(h=0, lty="dotted")
@@ -1682,7 +1708,6 @@ Get_model_outputs_from_resampling <- function(DatFromCSVFile, bdm_params, obj_TM
                            env_param = params[jj,"env_param"],
                            dep = params[jj,"dep"])
       params[jj,"MSY"] <- Calc_MSYAndBiolRefPoints(mod_type, mod_option, param_results, env=0)$MSY
-
       cat(j, "\n")
     }
   }
