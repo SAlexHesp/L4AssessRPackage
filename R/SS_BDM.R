@@ -1038,6 +1038,17 @@ Plot_Biomass_Catch_And_Exploitation <- function(DatFromCSVFile, mod_type, mod_op
   dat=DatFromCSVFile
   year <- model_outputs$season
 
+  obs_env <- dat$obs_env
+  param_results$env_p
+  mod_MSY <- rep(0,length(obs_env))
+  k=0
+  for (i in obs_env) {
+    k=k+1
+    env = obs_env[k]
+    mod_MSY[k]=Calc_MSYAndBiolRefPoints(mod_type, mod_option, param_results, env)$MSY
+
+  }
+
   # specify model number
   model_num <- (mod_type-1) * 4 + mod_option
 
@@ -1081,7 +1092,7 @@ Plot_Biomass_Catch_And_Exploitation <- function(DatFromCSVFile, mod_type, mod_op
   legend("topleft",paste("b)"),bty="n")
 
   ## (3) catch and MSY ----
-  ylims = Get_yaxis_scale(model_outputs$Chat_upp)
+  ylims = Get_yaxis_scale(c(model_outputs$Chat_upp,mod_MSY))
   ymax = ylims$ymax
   yint = ylims$yint
   plot(dat$year,dat$tot_catch, type="p", ylim=c(0,ymax), pch=21,
@@ -1089,11 +1100,13 @@ Plot_Biomass_Catch_And_Exploitation <- function(DatFromCSVFile, mod_type, mod_op
   mtext(xaxis_lab,side=1,line=2,cex=1)
   mtext("Catch, t",side=2,line=2.5,cex=1)
   lines(model_outputs$season,model_outputs$Chat, type="l", lwd=1)
+  lines(dat$year, mod_MSY, col="blue", lty="dotted")
   x <- c(year,rev(year))
   y <- c(model_outputs$Chat_low,rev(model_outputs$Chat_upp))
   polygon(x,y, col=rgb(0.2,0.2,0.2,0.3), border=NA)
-  abline(h=c(Calc_MSYAndBiolRefPoints(mod_type, mod_option, param_results, env=0)$MSY), lty=c(1,3,3), col=c(2,2,2))
-  legend("topright",paste("MSY ", round(Calc_MSYAndBiolRefPoints(mod_type, mod_option, param_results, env=0)$MSY),"t"), bty="n")
+  # abline(h=c(Calc_MSYAndBiolRefPoints(mod_type, mod_option, param_results, env=0)$MSY), lty=c(1,3,3), col=c(2,2,2))
+  env = obs_env[k]
+  legend("topright",paste("MSY_curr = ", round(Calc_MSYAndBiolRefPoints(mod_type, mod_option, param_results, env)$MSY),"t"), bty="n")
   legend("topleft",paste("c)"),bty="n")
 
   ## (4) exploitation ----
@@ -1546,6 +1559,43 @@ Plot_Estimated_Random_Effects <- function(DatFromCSVFile, model_outputs) {
   polygon(x,y,col=rgb(0.2,0.2,0.2,0.2), border=NA)
   abline(h=0, lty="dotted")
 
+}
+
+#' Plot derived values for annual carrying capacity (if assuming environment directly affects K)
+#'
+#' This plots derived values for annual carrying capacity, using outputs from the fitted
+#' state space production model.
+#'
+#' @param DatFromCSVFile model data read in from csv file
+#' @param result_TMB object containing outputs from fitted TMB model
+#' @param xaxis_lab label for x axis
+#' @param y_max max y axis value
+#'
+#' @return plot of dervied annual K values
+#'
+#' @export
+Plot_Mod_Car_Capacity <- function(DatFromCSVFile, result_TMB, xaxis_lab=NA, y_max=NA) {
+
+  dat=DatFromCSVFile
+  year <- model_outputs$season
+  x <- c(year,rev(year))
+  if (is.na(xaxis_lab)) xaxis_lab = "Year"
+
+  Ann_K = result_TMB$K * exp(result_TMB$env_param * dat$obs_env)
+
+  if (is.na(y_max)) {
+    ylims = Get_yaxis_scale(Ann_K)
+    y_max = ylims$ymax
+  }
+
+  plot(dat$year,Ann_K, type="p", ylim=c(0,y_max),
+       xlab="", ylab="", las=1)
+  lines(dat$year, Ann_K, lty="solid")
+  abline(h=result_TMB$K, lty="dotted")
+
+  mtext(xaxis_lab,side=1,line=2,cex=1)
+  mtext("Annual K",side=2,line=3,cex=1)
+  legend("topright",c("Ann_K","K (env=0)"),bty="n", lty=c("solid","dotted"), pch=c(1,-1))
 }
 
 #' Get variance-covariance matrix, for use in resampling
