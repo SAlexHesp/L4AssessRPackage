@@ -25,10 +25,7 @@ compile("SSBDM.cpp", flags="-Wno-ignored-attributes")
 dyn.load(dynlib("SSBDM"))
 
 # read in dat csv file to get rest of data
-# DatFromCSVFile = read.csv("SSBDM CS crab data.csv", header=T)
-DatFromCSVFile = read.csv("SSBDM CS crab data Dec 23.csv", header=T)
-
-
+DatFromCSVFile = read.csv("SSBDM CS crab data.csv", header=T)
 names(DatFromCSVFile)
 
 # Specify the model type and structure to be fitted
@@ -49,7 +46,7 @@ Sigma_env = 0.1 # assumed strength of environmental link with biomass (low value
 max_currBrel = 1.0 # upper limit to relative biomass in final year, i.e. final depletion penalty. Turn off by setting to high value.
 # specify lower and upper bounds for parameters
 pInit_bnds = c(0,1)
-ln_K_bnds = c(6,12)
+ln_K_bnds = c(6,9)
 ln_r_bnds = log(c(0.01,1.5))
 ln_q_bnds = c(-20,0)
 ln_sd_bnds = c(-20,1)
@@ -58,6 +55,8 @@ ln_dep_bnds = c(-20,0)
 ln_pt_bnds = c(-20,0)
 bdm_param_bounds = Set_BoundsForBDM_Params(ln_K_bnds, ln_r_bnds, ln_q_bnds, ln_sd_bnds,
                                            env_param_bnds, ln_dep_bnds, ln_pt_bnds, pInit_bnds)
+length(bdm_param_bounds$low_bound_list[14])
+length(bdm_param_bounds$upp_bound_list[14])
 
 # get data inputs for TMB model
 bdm_data = Get_BDM_Data(DatFromCSVFile, wt_param_pen, wt_depl_pen, wt_biom_pen, wt_harv_pen, 
@@ -91,10 +90,10 @@ bdm_params
 # set parameter map for TMB model (i.e. list of which model parameters not to estimate)
 # setting fix_pInit=1 results in initial relative biomass being fixed at user-specified input value,
 # setting to 1, it is estimated.
-bdm_map = Get_BDM_Map(DatFromCSVFile, mod_scenario, mod_option, fix_pInit=1)
+bdm_map = Get_BDM_Map(DatFromCSVFile, mod_scenario, mod_option, fix_pInit=0)
 
 # fit the model
-result = fit_the_model(DatFromCSVFile, mod_scenario, mod_type, mod_option, bdm_data, bdm_params, fix_pInit=1, bdm_map = NULL, initial_params = NULL)
+result = fit_the_model(DatFromCSVFile, mod_scenario, mod_type, mod_option, bdm_data, bdm_params, fix_pInit=0, bdm_map = NULL, initial_params = NULL)
 result$fit_TMB$par
 # get results
 fit_TMB = result$fit_TMB
@@ -106,8 +105,6 @@ fit_TMB$convergence
 result_TMB = result$rep_TMB
 result_TMB$r
 result_TMB$K
-log(result_TMB$r)
-log(result_TMB$K)
 result_TMB$env_param
 result_TMB$pInit
 
@@ -138,9 +135,6 @@ if (mod_scenario == 2) {
   Plot_Estimated_Random_Effects(DatFromCSVFile, model_outputs)  
 }
 
-# plot derived annual K values
-Plot_Mod_Car_Capacity(DatFromCSVFile, result_TMB, xaxis_lab=NA, y_max=NA)
-
 
 # get deterministic estimates for MSY and Bmsy (not assuming regime shift)
 env = 0 # 'average' env cond. # env = -0.5 # below average env cond.
@@ -152,6 +146,12 @@ env = -0.5 # 'average' env cond. # env = -0.5 # below average env cond. (not ass
 MSYRes = Calc_MSYAndBiolRefPoints(mod_type, mod_option, param_results, env)
 MSYRes$MSY
 MSYRes$Bmsy
+
+# mod_option = 2 (Schaefer with environmental effect)
+# results for model 2
+result_TMB$r
+result_TMB$K
+
 
 # ********************************************
 # For Simon - dynamic reference point question
