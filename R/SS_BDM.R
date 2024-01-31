@@ -1553,7 +1553,7 @@ Plot_Estimated_Random_Effects <- function(DatFromCSVFile, model_outputs) {
   y_max <- max(model_outputs$EpsR_upp) # set y-axis limit
   plot(dat$year,model_outputs$EpsR, xlab="",ylab="", ylim=c(y_min,y_max), type="l")
   x <- c(dat$year, rev(dat$year))
-  mtext("Year Biomass",side=1,line=2,cex=1)
+  mtext("Year",side=1,line=2,cex=1)
   mtext("EpsR",side=2,line=2.5,cex=1)
   y <- c(model_outputs$EpsR_low,rev(model_outputs$EpsR_upp))
   polygon(x,y,col=rgb(0.2,0.2,0.2,0.2), border=NA)
