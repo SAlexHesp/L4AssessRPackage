@@ -12,7 +12,8 @@ Set_BoundsForBDM_Params(
   env_param_bnds,
   ln_dep_bnds,
   ln_pt_bnds,
-  pInit_bnds
+  pInit_bnds,
+  FF_bnds
 )
 }
 \arguments{
@@ -47,5 +48,5 @@ ln_dep_bnds <- c(-20,0)
 ln_pt_bnds <- c(-20,0)
 pInit_bnds = c(0,1)
 bdm_param_bounds = Set_BoundsForBDM_Params(ln_K_bnds, ln_r_bnds, ln_q_bnds, ln_sd_bnds,
-                                         env_param_bnds, ln_dep_bnds, ln_pt_bnds, pInit_bnds)
+                                         env_param_bnds, ln_dep_bnds, ln_pt_bnds, pInit_bnds, FF_bnds)
 }

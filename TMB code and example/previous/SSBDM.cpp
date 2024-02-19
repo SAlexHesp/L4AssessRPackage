@@ -405,7 +405,7 @@ template<class Type> Type objective_function<Type>::operator() () {
   
   // Set the biomass at the start of the first year, i.e.
   // year 0, to the carrying capacity
-  biom(0) = K * pInit_parm;
+  biom(0) = K * exp(env_param * obs_env(0)) * pInit_parm;
   relbiom(0) = pInit_parm;
   
   // Loop over the remaining years, updating the biomass for each year using the
@@ -415,7 +415,7 @@ template<class Type> Type objective_function<Type>::operator() () {
     
     // Calculate the depletion, harvest fraction, and fishing mortality
     if(i>0) {
-      relbiom(i) = biom(i) / K;
+      relbiom(i) = biom(i) / (K * exp(env_param * obs_env(i)));
       harv(i) = tot_catch(i) / biom(i);
       harv_pen += penfun(Type(1.0) - harv(i), eps, harv_pen);
       harv(i)  = Type(1.0) - posfun(Type(1.0) - harv(i), Type(0.0001), biom_pen);

@@ -205,7 +205,7 @@ template<class Type> Type objective_function<Type>::operator() () {
   Type harv_pen = Type(0.0);
   Type biom_pen = Type(0.0);
   Type pInit_pen = Type(0.0);  
-  
+  Type ff_pen = Type(0.0);  
   
   // Calculate penalties if the parameters lie outside specified feasible ranges, and reset
   // to feasible ranges for population being modeled
@@ -318,6 +318,15 @@ template<class Type> Type objective_function<Type>::operator() () {
   Type pInit_parm = temp_parm;
   param_pen += pInit_pen;
   
+  for(int i=0; i<nyrs; i++) {
+    ff_pen = penfun(FF(i) - lowbound(14), eps, ff_pen);
+    temp_parm = lowbound(14) + posfun(FF(i) - lowbound(14), eps, ff_pen);
+    ff_pen += penfun(uppbound(14) - temp_parm, eps, ff_pen);
+    temp_parm = uppbound(14) - posfun(uppbound(14) - temp_parm, eps, ff_pen);
+    FF(i) = temp_parm;
+    param_pen += ff_pen;
+  }
+  
   std::cout << "pInit " << pInit << " lbnd " << lowbound(13) << " ubnd " << uppbound(13) <<
    " pInit_parm " << pInit_parm << std::endl;
   
@@ -369,8 +378,6 @@ template<class Type> Type objective_function<Type>::operator() () {
   Type NLL_Chat;
   Type final_depl;
   Type NLL;  
-    
-    
 
   // Calculate the predicted values of environment in year i for year from 0 to nyrs - 1
   if (mod_scenario == 1) {
@@ -382,7 +389,6 @@ template<class Type> Type objective_function<Type>::operator() () {
   } else {
     
     // Scenario 2
-    // std::cout << "mod_scenario: " << mod_scenario << "  mod_option: " << mod_option << std::endl;
     if ((mod_option == 1) || (mod_option == 3)) {
       // For scenario 2 and model types 1 and 3 the predicted values of environment are just the mean
       // as no relationship with process errors are assumed. 
@@ -400,11 +406,7 @@ template<class Type> Type objective_function<Type>::operator() () {
     // } // mod_scenario==2 loop
   }
 
-
   // Calculate the expected biomass at the start of each year
-  
-  // Set the biomass at the start of the first year, i.e.
-  // year 0, to the carrying capacity
   biom(0) = K * exp(env_param * obs_env(0)) * pInit_parm;
   relbiom(0) = pInit_parm;
   
@@ -778,8 +780,12 @@ template<class Type> Type objective_function<Type>::operator() () {
     resid_env(i) = obs_env(i) - est_env(i);
     sq_resid_env(i) = resid_env(i) * resid_env(i);
     env_var(i) = env_se(i) * env_se(i);
+    // original
+    //NLL_env += Type(0.5) * log((Sigma_env * Sigma_env) + env_var(i)) + Type(0.5) * log(Type(2.0) * pi) +
+    //  sq_resid_env(i) / (Type(2.0) * (Sigma_env * Sigma_env) + env_var(i));
+    // revised AD
     NLL_env += Type(0.5) * log((Sigma_env * Sigma_env) + env_var(i)) + Type(0.5) * log(Type(2.0) * pi) +
-      sq_resid_env(i) / (Type(2.0) * (Sigma_env * Sigma_env) + env_var(i));
+      sq_resid_env(i) / (Type(2.0) * (Sigma_env * Sigma_env + env_var(i)));
     
   } // yr loop
   
@@ -802,7 +808,7 @@ template<class Type> Type objective_function<Type>::operator() () {
   NLL = NLL_CPUE1 + NLL_env + NLL_Chat + NLL_CPUE2 + NLL_CPUE3 + NLL_CPUE4 + 
     biom_pen + depl_pen + param_pen + harv_pen + EpsR_pen;
   
-  std::cout << "NLL: " << NLL << "NLL_CPUE1: " << NLL_CPUE1 << "  NLL_CPUE2: " << NLL_CPUE2 << "  NLL_CPUE3: " << NLL_CPUE3 <<  "  NLL_CPUE4: " << NLL_CPUE4 << 
+  std::cout << "NLL: " << NLL << " NLL_CPUE1: " << NLL_CPUE1 << "  NLL_CPUE2: " << NLL_CPUE2 << "  NLL_CPUE3: " << NLL_CPUE3 <<  "  NLL_CPUE4: " << NLL_CPUE4 << 
     "  NLL_env: " << NLL_env << " NLL_Chat " << NLL_Chat << std::endl;
   std::cout << "biom_pen: " << biom_pen << "  depl_pen: " << depl_pen << "  param_pen: " << param_pen << "  harv_pen: " << 
     harv_pen << "  EpsR_pen: " << EpsR_pen << std::endl;
